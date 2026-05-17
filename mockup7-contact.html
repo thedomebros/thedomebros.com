@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Contact — TheDomeBros Mockup 7 (Coastline)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--sand:#f1ede4;--card:#fbf9f3;--ink:#1f3a44;--mut:#5f7680;--brand:#235e63;--accent:#b89b6e;--line:#ddd6c7}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--sand);line-height:1.7}
+  h1,.brand{font-family:Spectral,Georgia,serif;font-weight:500;line-height:1.18}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:28px 6vw;border-bottom:1px solid var(--line)}
+  .brand{font-size:21px;font-weight:600}
+  .nav a.lnk{margin-left:26px;text-decoration:none;color:var(--mut);font-size:14px}
+  .nav a.lnk:hover{color:var(--brand)}
+  .wrap{max-width:600px;margin:64px auto 90px;padding:0 24px}
+  .ey{color:var(--accent);font-size:13px;letter-spacing:.2em;text-transform:uppercase;text-align:center;margin-bottom:12px}
+  h1{font-size:clamp(32px,5vw,46px);text-align:center;margin-bottom:10px}
+  .sub{color:var(--mut);text-align:center;margin-bottom:36px}
+  form{background:var(--card);border:1px solid var(--line);padding:38px}
+  label{display:block;font-family:Spectral;font-size:15px;color:var(--ink);margin:18px 0 7px}
+  input,textarea{width:100%;border:1px solid var(--line);background:#fff;padding:13px 14px;font:inherit;color:var(--ink)}
+  input:focus,textarea:focus{outline:none;border-color:var(--brand)}
+  textarea{min-height:120px;resize:vertical}
+  .btn{margin-top:26px;width:100%;background:var(--brand);color:var(--sand);border:0;padding:15px;font-size:15px;letter-spacing:.04em;cursor:pointer}
+  .btn:hover{background:#19474b}
+  .note{text-align:center;color:var(--mut);font-size:13px;margin-top:16px}
+  footer{text-align:center;color:var(--mut);font-size:13px;padding:30px 6vw;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand">TheDomeBros</div>
+    <div>
+      <a class="lnk" href="/mockup7">Home</a>
+      <a class="lnk" href="/mockup7-contact">Contact</a>
+      <a class="lnk" href="/mockups">All mockups</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="ey">Get in touch</div>
+    <h1>Request a quote</h1>
+    <p class="sub">Every dome is custom — tell us about your pool and we'll send an estimate.</p>
+    <form onsubmit="return false">
+      <label>Full name</label><input type="text" placeholder="Your name" />
+      <label>Email</label><input type="email" placeholder="you@example.com" />
+      <label>Phone</label><input type="tel" placeholder="(555) 000-0000" />
+      <label>Approx. pool size (width × length)</label><input type="text" placeholder="e.g. 16 ft x 32 ft" />
+      <label>Message</label><textarea placeholder="Tell us about your pool and deck..."></textarea>
+      <button class="btn" type="submit">Send request</button>
+      <p class="note">Design mockup — this form is not connected.</p>
+    </form>
+  </div>
+
+  <footer>Mockup 7 — “Coastline” · concept only, not the live site · TheDomeBros</footer>
+</body>
+</html>

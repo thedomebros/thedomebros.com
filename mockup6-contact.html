@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Contact — TheDomeBros Mockup 6 (Still Water)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#fbfcfd;--ink:#22303a;--mut:#7a8b95;--brand:#34607a;--line:#e7ebee}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.8}
+  h1,.brand{font-family:'Cormorant Garamond',Georgia,serif;font-weight:400;line-height:1.15}
+  .lbl{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--mut)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:36px 8vw}
+  .brand{font-size:24px}
+  .nav a.lnk{margin-left:30px;text-decoration:none;color:var(--mut);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+  .nav a.lnk:hover{color:var(--ink)}
+  .wrap{max-width:560px;margin:60px auto 110px;padding:0 24px;text-align:center}
+  h1{font-size:clamp(38px,6vw,60px);margin:14px 0 14px}
+  .sub{color:var(--mut);margin-bottom:46px}
+  form{text-align:left}
+  label{display:block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin:26px 0 8px}
+  input,textarea{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:10px 0;font:inherit;color:var(--ink)}
+  input:focus,textarea:focus{outline:none;border-bottom-color:var(--brand)}
+  textarea{min-height:100px;resize:vertical}
+  .btn{margin-top:40px;background:transparent;color:var(--brand);border:1px solid var(--brand);padding:15px 40px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:.2s}
+  .btn:hover{background:var(--brand);color:#fff}
+  .note{color:var(--mut);font-size:12px;letter-spacing:.08em;margin-top:22px}
+  footer{text-align:center;color:var(--mut);font-size:12px;letter-spacing:.1em;padding:40px 8vw;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand">TheDomeBros</div>
+    <div>
+      <a class="lnk" href="/mockup6">Home</a>
+      <a class="lnk" href="/mockup6-contact">Contact</a>
+      <a class="lnk" href="/mockups">All mockups</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <span class="lbl">Get in touch</span>
+    <h1>Request a quote</h1>
+    <p class="sub">Every dome is custom — tell us about your pool and we'll send an estimate.</p>
+    <form onsubmit="return false">
+      <label>Full name</label><input type="text" />
+      <label>Email</label><input type="email" />
+      <label>Phone</label><input type="tel" />
+      <label>Approx. pool size (width × length)</label><input type="text" placeholder="e.g. 16 ft x 32 ft" />
+      <label>Message</label><textarea></textarea>
+      <div style="text-align:center"><button class="btn" type="submit">Send request</button></div>
+      <p class="note" style="text-align:center">Design mockup — this form is not connected.</p>
+    </form>
+  </div>
+
+  <footer>MOCKUP 6 — “STILL WATER” · CONCEPT ONLY, NOT THE LIVE SITE</footer>
+</body>
+</html>

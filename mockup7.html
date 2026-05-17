@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>TheDomeBros — Mockup 7 (Coastline)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--sand:#f1ede4;--card:#fbf9f3;--ink:#1f3a44;--mut:#5f7680;--brand:#235e63;--accent:#b89b6e;--line:#ddd6c7}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--sand);line-height:1.7}
+  h1,h2,h3,.brand{font-family:Spectral,Georgia,serif;font-weight:500;line-height:1.18}
+  a{color:inherit}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:28px 6vw;border-bottom:1px solid var(--line)}
+  .brand{font-size:21px;font-weight:600}
+  .nav a.lnk{margin-left:26px;text-decoration:none;color:var(--mut);font-size:14px}
+  .nav a.lnk:hover{color:var(--brand)}
+  .btn{display:inline-block;text-decoration:none;background:var(--brand);color:var(--sand);padding:13px 26px;font-size:14px;letter-spacing:.04em;transition:.2s}
+  .btn:hover{background:#19474b}
+  .split{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1.25fr}
+  .left{padding:90px 5vw;border-right:1px solid var(--line)}
+  .left .ey{color:var(--accent);font-size:13px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px}
+  .left h1{font-size:clamp(36px,4.4vw,58px);margin-bottom:22px}
+  .left p{color:var(--mut);font-size:17px;margin-bottom:30px}
+  .right{padding:0}
+  .right img{width:100%;height:100%;min-height:340px;object-fit:cover;filter:saturate(.85)}
+  .band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card)}
+  .feat{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .feat .f{padding:40px 5vw;border-left:1px solid var(--line)}
+  .feat .f:first-child{border-left:0}
+  .feat .f .k{color:var(--accent);font-family:Spectral;font-size:15px}
+  .feat .f h3{font-size:21px;margin:8px 0 6px}
+  .feat .f p{color:var(--mut);font-size:14.5px}
+  .article{max-width:780px;margin:0 auto;padding:90px 6vw}
+  .article .ey{color:var(--accent);font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+  .article h2{font-size:clamp(28px,4vw,40px);margin:12px 0 30px}
+  .article .step{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:24px 0;border-top:1px solid var(--line)}
+  .article .step .no{font-family:Spectral;font-size:30px;color:var(--brand)}
+  .article .step h3{font-size:20px;margin-bottom:4px}
+  .article .step p{color:var(--mut);font-size:15px}
+  .cta{text-align:center;padding:90px 6vw;border-top:1px solid var(--line);background:var(--card)}
+  .cta h2{font-size:clamp(28px,4.5vw,44px);margin-bottom:14px}
+  .cta p{color:var(--mut);margin-bottom:28px}
+  footer{text-align:center;color:var(--mut);font-size:13px;padding:30px 6vw;border-top:1px solid var(--line)}
+  @media(max-width:860px){.split{grid-template-columns:1fr}.left{border-right:0;border-bottom:1px solid var(--line)}.right img{min-height:260px}.feat .f{border-left:0;border-top:1px solid var(--line)}.article .step{grid-template-columns:1fr;gap:6px}}
+</style>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand">TheDomeBros</div>
+    <div>
+      <a class="lnk" href="/mockup7">Home</a>
+      <a class="lnk" href="/mockup7-contact">Contact</a>
+      <a class="lnk" href="/mockups">All mockups</a>
+    </div>
+  </div>
+
+  <section class="split">
+    <div class="left">
+      <div class="ey">Pool dome sales &amp; installation</div>
+      <h1>Your pool, kept in season all year.</h1>
+      <p>We sell and install air-supported vinyl pool domes that anchor into your concrete deck, hold their shape with gentle air pressure, and keep your pool usable as the weather changes.</p>
+      <a class="btn" href="/mockup7-contact">Request a quote</a>
+    </div>
+    <div class="right"><img src="/Images/Gray%20Bubble%20Cover%20Cropped.png" alt="Pool dome over a backyard pool" /></div>
+  </section>
+
+  <div class="band"><div class="feat">
+    <div class="f"><div class="k">01</div><h3>Comfort</h3><p>Trapped warmth and blocked wind for a more comfortable swim around your existing pool.</p></div>
+    <div class="f"><div class="k">02</div><h3>Year-round use</h3><p>Value from your pool beyond summer — family, training, therapy, entertaining.</p></div>
+    <div class="f"><div class="k">03</div><h3>Anchored</h3><p>A secure anchor system set into the surrounding concrete keeps it positioned.</p></div>
+    <div class="f"><div class="k">04</div><h3>Air-supported</h3><p>A quiet blower holds the dome with gentle pressure — no poles or framing.</p></div>
+  </div></div>
+
+  <article class="article">
+    <div class="ey">The process</div>
+    <h2>How the install works</h2>
+    <div class="step"><div class="no">I</div><div><h3>Measure</h3><p>We review pool shape, deck concrete, and blower placement so the dome is sized for your yard.</p></div></div>
+    <div class="step"><div class="no">II</div><div><h3>Anchor</h3><p>The vinyl perimeter is fastened to anchors set into the deck, creating a secure base.</p></div></div>
+    <div class="step"><div class="no">III</div><div><h3>Inflate &amp; service</h3><p>We inflate it, check the seal, tune the air pressure, and can take it down and reinstall each year.</p></div></div>
+  </article>
+
+  <section class="cta">
+    <h2>Tell us about your pool.</h2>
+    <p>Send your dimensions and we'll prepare an estimate.</p>
+    <a class="btn" href="/mockup7-contact">Request a quote</a>
+  </section>
+
+  <footer>Mockup 7 — “Coastline” · concept only, not the live site · TheDomeBros</footer>
+</body>
+</html>
