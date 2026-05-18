@@ -1,147 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content />
-        <meta name="author" content="TheDomeBros" />
-        <title>Contact | TheDomeBros</title>
-        <!-- Favicon-->
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <!-- Bootstrap icons-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
-        <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css" rel="stylesheet" />
-    </head>
-    <body class="d-flex flex-column">
-        <main class="flex-shrink-0">
-            <!-- Navigation-->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div class="container px-5">
-                    <a class="navbar-brand" href="/">TheDomeBros</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/pricing">Pricing</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/faq">FAQ</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-            <!-- Page content-->
-            <section class="py-5">
-                <div class="container px-5">
-                    <!-- Contact form-->
-                    <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-5">
-                        <div class="text-center mb-5">
-                            <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-envelope"></i></div>
-                            <h1 class="fw-bolder">Get in touch</h1>
-                            <p class="lead fw-normal text-muted mb-0">We'd love to hear from you</p>
-                        </div>
-                        <div class="row gx-5 justify-content-center">
-                            <div class="col-lg-8 col-xl-6">
-                                <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
-                                    <input type="hidden" name="access_key" value="95a44b5b-00e6-466d-81ae-3d869557c4e1" />
-                                    <input type="hidden" name="subject" value="New contact form submission from thedomebros.com" />
-                                    <input type="hidden" name="from_name" value="thedomebros.com contact form" />
-                                    <!-- Honeypot spam filter (hidden from real users)-->
-                                    <input type="checkbox" name="botcheck" id="botcheck" style="display: none;" tabindex="-1" autocomplete="off" />
-                                    <!-- Name input-->
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" id="name" name="name" type="text" placeholder="Enter your name..." required />
-                                        <label for="name">Full name</label>
-                                    </div>
-                                    <!-- Email address input-->
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" id="email" name="email" type="email" placeholder="name@example.com" required />
-                                        <label for="email">Email address</label>
-                                    </div>
-                                    <!-- Phone number input-->
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" id="phone" name="phone" type="tel" placeholder="(123) 456-7890" required />
-                                        <label for="phone">Phone number</label>
-                                    </div>
-                                    <!-- Pool size input-->
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" id="poolsize" name="pool_size" type="text" placeholder="e.g. 16 ft x 32 ft" required />
-                                        <label for="poolsize">Approx. pool size (width x length)</label>
-                                    </div>
-                                    <!-- Message input-->
-                                    <div class="form-floating mb-3">
-                                        <textarea class="form-control" id="message" name="message" placeholder="Enter your message here..." style="height: 10rem" required></textarea>
-                                        <label for="message">Message</label>
-                                    </div>
-                                    <!-- Submit error message-->
-                                    <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div></div>
-                                    <!-- Submit Button-->
-                                    <div class="d-grid"><button class="btn btn-primary btn-lg" id="submitButton" type="submit">Submit</button></div>
-                                </form>
-                                <!-- Success screen (outside the form so it stays visible after the form is hidden)-->
-                                <div class="d-none text-center py-5" id="submitSuccessMessage">
-                                    <div class="feature bg-primary bg-gradient text-white rounded-3 mb-4 mx-auto" style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:32px"><i class="bi bi-check-lg"></i></div>
-                                    <h2 class="fw-bolder mb-2">Quote request sent</h2>
-                                    <p class="lead fw-normal text-muted mb-1">Thanks for reaching out to TheDomeBros.</p>
-                                    <p class="text-muted mb-0">We've received your quote request and will review your pool details and get back to you soon.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <!-- Footer-->
-        <footer class="bg-dark py-4 mt-auto">
-            <div class="container px-5">
-                <div class="row align-items-center justify-content-between flex-column flex-sm-row">
-                    <div class="col-auto"><div class="small m-0 text-white">Copyright &copy; TheDomeBros 2026</div></div>
-                    <div class="col-auto">
-                        <a class="link-light small" href="#!">Privacy</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        <a class="link-light small" href="#!">Terms</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        <a class="link-light small" href="#!">Contact</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
-        <script src="js/scripts.js"></script>
-        <!-- Contact form handler (Web3Forms)-->
-        <script>
-            const contactForm = document.getElementById("contactForm");
-            contactForm.addEventListener("submit", async function (e) {
-                e.preventDefault();
-                const button = document.getElementById("submitButton");
-                const success = document.getElementById("submitSuccessMessage");
-                const error = document.getElementById("submitErrorMessage");
-                success.classList.add("d-none");
-                error.classList.add("d-none");
-                button.disabled = true;
-                try {
-                    const response = await fetch(contactForm.action, {
-                        method: "POST",
-                        headers: { Accept: "application/json" },
-                        body: new FormData(contactForm),
-                    });
-                    const data = await response.json();
-                    if (response.ok && data.success) {
-                        contactForm.reset();
-                        contactForm.classList.add("d-none");
-                        success.classList.remove("d-none");
-                    } else {
-                        error.classList.remove("d-none");
-                        button.disabled = false;
-                    }
-                } catch (err) {
-                    error.classList.remove("d-none");
-                    button.disabled = false;
-                }
-            });
-        </script>
-    </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Request a free quote from TheDomeBros — tell us about your pool and we'll get back to you." />
+  <meta name="author" content="TheDomeBros" />
+  <title>Contact | TheDomeBros</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="/css/site.css" rel="stylesheet" />
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="/">TheDomeBros</a>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact" class="active">Contact</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="heroin solo">
+      <div>
+        <span class="pill">Get in touch</span>
+        <h1>Request a quote</h1>
+        <p>Every dome is custom &mdash; tell us about your pool and we'll send an estimate.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tight">
+    <div class="formwrap">
+      <form id="contactForm" class="formcard" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="95a44b5b-00e6-466d-81ae-3d869557c4e1" />
+        <input type="hidden" name="subject" value="New quote request from thedomebros.com" />
+        <input type="hidden" name="from_name" value="thedomebros.com quote form" />
+        <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" placeholder="Your name" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" placeholder="(555) 000-0000" required />
+
+        <label for="poolsize">Approx. pool size (width &times; length)</label>
+        <input id="poolsize" name="pool_size" type="text" placeholder="e.g. 16 ft x 32 ft" required />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" placeholder="Tell us about your pool and deck..." required></textarea>
+
+        <button class="btn" id="submitButton" type="submit">Send request</button>
+        <div class="err" id="submitErrorMessage">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div>
+      </form>
+
+      <div class="success" id="submitSuccessMessage">
+        <div class="ic">&#10003;</div>
+        <h2>Quote request sent</h2>
+        <p>Thanks for reaching out to TheDomeBros. We've received your quote request and will review your pool details and get back to you soon.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer><div class="in">
+    <span>Copyright &copy; TheDomeBros 2026</span>
+    <span><a href="#!">Privacy</a> &middot; <a href="#!">Terms</a> &middot; <a href="/contact">Contact</a></span>
+  </div></footer>
+
+  <script>
+    const contactForm = document.getElementById("contactForm");
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const button = document.getElementById("submitButton");
+      const success = document.getElementById("submitSuccessMessage");
+      const error = document.getElementById("submitErrorMessage");
+      error.style.display = "none";
+      button.disabled = true;
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(contactForm),
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          contactForm.classList.add("is-hidden");
+          success.style.display = "block";
+        } else {
+          error.style.display = "block";
+          button.disabled = false;
+        }
+      } catch (err) {
+        error.style.display = "block";
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
 </html>

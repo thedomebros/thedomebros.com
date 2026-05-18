@@ -1,92 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
-        <meta name="author" content="TheDomeBros" />
-        <title>About | TheDomeBros</title>
-        <!-- Favicon-->
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <!-- Bootstrap icons-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
-        <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css" rel="stylesheet" />
-    </head>
-    <body class="d-flex flex-column">
-        <main class="flex-shrink-0">
-            <!-- Navigation-->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div class="container px-5">
-                    <a class="navbar-brand" href="/">TheDomeBros</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/pricing">Pricing</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/faq">FAQ</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-            <!-- Header-->
-            <header class="py-5">
-                <div class="container px-5">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8 col-xxl-6">
-                            <div class="text-center my-5">
-                                <h1 class="fw-bolder mb-3">Swimmers who didn't want summer to end</h1>
-                                <p class="lead fw-normal text-muted mb-4">We're a family of brothers who never liked watching the pool sit unused for half the year &mdash; so we did something about it.</p>
-                                <a class="btn btn-primary btn-lg" href="#scroll-target">Read our story</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            <!-- Story section-->
-            <section class="py-5 bg-light" id="scroll-target">
-                <div class="container px-5 my-5">
-                    <div class="row gx-5 justify-content-center">
-                        <div class="col-lg-8">
-                            <h2 class="fw-bolder">Our story</h2>
-                            <p class="lead fw-normal text-muted">We never liked the idea that a backyard pool only gets used a few months a year. After we invested in a pool dome for our own backyard just so we could keep swimming through the cold months, it changed everything &mdash; the pool went from a short summer season to something we used all year long.</p>
-                            <p class="fw-normal text-muted mb-0">The surprising part was how few pool owners knew this was even an option for a pool they already had. We started TheDomeBros to change that: to help other owners get year-round use out of the pool they've already invested in, without building a permanent room around it.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- Why section-->
-            <section class="py-5">
-                <div class="container px-5 my-5">
-                    <div class="row gx-5 justify-content-center">
-                        <div class="col-lg-8">
-                            <h2 class="fw-bolder">Why we do this</h2>
-                            <p class="lead fw-normal text-muted mb-0">A backyard pool is a big investment to install and maintain. An air-supported dome protects that investment and stretches it across every season &mdash; swim in the winter, stay out of the wind and rain, and keep the whole family in the water year-round.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <!-- Footer-->
-        <footer class="bg-dark py-4 mt-auto">
-            <div class="container px-5">
-                <div class="row align-items-center justify-content-between flex-column flex-sm-row">
-                    <div class="col-auto"><div class="small m-0 text-white">Copyright &copy; TheDomeBros 2026</div></div>
-                    <div class="col-auto">
-                        <a class="link-light small" href="#!">Privacy</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        <a class="link-light small" href="#!">Terms</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        <a class="link-light small" href="#!">Contact</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
-        <script src="js/scripts.js"></script>
-    </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The story behind TheDomeBros — brothers who wanted to swim year-round and now help others do the same." />
+  <meta name="author" content="TheDomeBros" />
+  <title>About | TheDomeBros</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="/css/site.css" rel="stylesheet" />
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="/">TheDomeBros</a>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/about" class="active">About</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="heroin solo">
+      <div>
+        <span class="pill">About TheDomeBros</span>
+        <h1>Swimmers who didn't want summer to end</h1>
+        <p>We're a family of brothers who never liked watching the pool sit unused for half the year &mdash; so we did something about it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="prose">
+      <h2>Our story</h2>
+      <p class="big">We never liked the idea that a backyard pool only gets used a few months a year. After we invested in a pool dome for our own backyard just so we could keep swimming through the cold months, it changed everything &mdash; the pool went from a short summer season to something we used all year long.</p>
+      <p>The surprising part was how few pool owners knew this was even an option for a pool they already had. We started TheDomeBros to change that: to help other owners get year-round use out of the pool they've already invested in, without building a permanent room around it.</p>
+    </div>
+  </section>
+
+  <section class="sec tight">
+    <div class="prose">
+      <h2>Why we do this</h2>
+      <p class="big">A backyard pool is a big investment to install and maintain. An air-supported dome protects that investment and stretches it across every season &mdash; swim in the winter, stay out of the wind and rain, and keep the whole family in the water year-round.</p>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="ctain">
+      <h2>Want a year-round pool?</h2>
+      <p>Tell us about your pool and we'll put together an estimate.</p>
+      <a class="btn" href="/contact">Request a quote</a>
+    </div>
+  </section>
+
+  <footer><div class="in">
+    <span>Copyright &copy; TheDomeBros 2026</span>
+    <span><a href="#!">Privacy</a> &middot; <a href="#!">Terms</a> &middot; <a href="/contact">Contact</a></span>
+  </div></footer>
+</body>
 </html>
