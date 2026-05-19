@@ -32,7 +32,7 @@ img{max-width:100%}
 
 /* Hero */
 .hero{max-width:1240px;margin:14px auto 0;padding:24px 6vw 70px}
-.heroin{background:linear-gradient(160deg,#e8ecf5,#f6f4ef 60%);border:1px solid var(--line);border-radius:32px;padding:64px 6vw;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.heroin{background:#e9edf6;border:1px solid var(--line);border-radius:32px;padding:64px 6vw;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
 .heroin.solo{grid-template-columns:1fr;text-align:center;justify-items:center}
 .pill{display:inline-block;background:#fff;border:1px solid var(--line);color:var(--navy);font-weight:700;font-size:13px;padding:7px 16px;border-radius:999px;margin-bottom:20px}
 .heroin h1{font-size:clamp(34px,5vw,56px);margin-bottom:18px}
@@ -145,7 +145,7 @@ footer a:hover{color:var(--navy)}
     --navy2:#5077c0;
     --line:#2b3645;
   }
-  .heroin{background:linear-gradient(160deg,#1b2636,#0f1722 60%)}
+  .heroin{background:#172231}
   .btn{color:#f3f6fb}
   .btn.o{background:var(--card);color:#bcd0f5}
   .pill{background:var(--card);color:#bcd0f5;border-color:var(--line)}
