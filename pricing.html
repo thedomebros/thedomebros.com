@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Pricing for TheDomeBros pool domes — every dome is custom, so we provide a free quote based on your pool." />
+  <meta name="description" content="Every pool dome is custom, so pricing is by quote. Tell us about your Utah County pool and we'll send a free estimate." />
   <meta name="author" content="TheDomeBros" />
-  <title>Pricing | TheDomeBros</title>
+  <title>Request a Quote | TheDomeBros</title>
   <link rel="icon" type="image/png" href="/assets/favicon-domebros.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +28,7 @@
     <div class="links">
       <a href="/">Home</a>
       <a href="/about">About</a>
-      <a href="/pricing" class="active">Pricing</a>
+      <a href="/pricing" class="active">Request a Quote</a>
       <a href="/faq">FAQ</a>
       <a href="/contact">Contact</a>
     </div>
@@ -36,29 +36,54 @@
   <label for="navtoggle" class="navscrim" aria-hidden="true"></label>
 
   <section class="hero">
-    <div class="heroin solo">
+    <div class="heroin">
       <div>
         <span class="pill">Pricing</span>
-        <h1>Every dome is custom &mdash; so every quote is too.</h1>
-        <p>Because each dome is sized and anchored to your specific pool and deck, we don't list flat prices. Your quote depends on your pool's dimensions, your deck layout, and the options you choose.</p>
-        <div class="acts">
-          <a class="btn" href="/contact">Request a free quote</a>
+        <h1>Request a quote</h1>
+        <p>Every dome is custom &mdash; so every quote is too. Because each dome is sized and anchored to your specific pool and deck, we don't list flat prices. Your estimate depends on your pool's dimensions, your deck layout, and the options you choose.</p>
+        <ul style="list-style:none;color:var(--mut);font-size:16px;line-height:2.2">
+          <li>&#10003;&nbsp; Free, no-obligation estimate</li>
+          <li>&#10003;&nbsp; Priced to your exact pool &amp; deck</li>
+          <li>&#10003;&nbsp; Sales and installation handled by us</li>
+          <li>&#10003;&nbsp; Serving Utah County</li>
+        </ul>
+      </div>
+      <div class="formwrap" style="margin:0" id="quote-form">
+        <form id="contactForm" class="formcard" action="https://quote-form.thedomebros-com.workers.dev" method="POST">
+          <h2 style="font-size:24px;margin-bottom:6px">Get your free quote</h2>
+          <p class="note" style="text-align:left;margin:0 0 4px">Usually a quick reply within a day or two.</p>
+          <input type="hidden" name="source" value="pricing" />
+          <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" placeholder="Your name" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+          <label for="phone">Phone <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" placeholder="(555) 000-0000" />
+
+          <label for="poolsize">Approx. pool size (width &times; length)</label>
+          <input id="poolsize" name="pool_size" type="text" placeholder="e.g. 16 ft x 32 ft" required />
+
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Tell us about your pool and deck..." required></textarea>
+
+          <label for="attachments">Photos of your pool &amp; deck <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+          <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
+          <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
+
+          <button class="btn" id="submitButton" type="submit">Request my quote</button>
+          <div class="err" id="submitErrorMessage">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div>
+        </form>
+
+        <div class="success" id="submitSuccessMessage">
+          <div class="ic">&#10003;</div>
+          <h2>Quote request sent</h2>
+          <p>Thanks for reaching out to TheDomeBros. We've received your quote request and will review your pool details and get back to you soon.</p>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="sec tight">
-    <div class="prose" style="text-align:center">
-      <p class="big">Tell us your approximate pool size (width &times; length) in the request and we'll come back to you with an estimate.</p>
-    </div>
-  </section>
-
-  <section class="cta">
-    <div class="ctain">
-      <h2>Get your estimate</h2>
-      <p>Send your pool details and we'll prepare a quote.</p>
-      <a class="btn" href="/contact">Request a free quote</a>
     </div>
   </section>
 
@@ -66,5 +91,47 @@
     <span>Copyright &copy; TheDomeBros 2026</span>
     <span><a href="/privacy">Privacy</a> &middot; <a href="#!">Terms</a> &middot; <a href="/contact">Contact</a></span>
   </div></footer>
+
+  <script>
+    const contactForm = document.getElementById("contactForm");
+    const DEFAULT_ERR = "Something went wrong — please email us directly at contact@thedomebros.com.";
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const button = document.getElementById("submitButton");
+      const success = document.getElementById("submitSuccessMessage");
+      const error = document.getElementById("submitErrorMessage");
+      const fail = (msg) => { error.textContent = msg; error.style.display = "block"; button.disabled = false; };
+      error.style.display = "none";
+      error.textContent = DEFAULT_ERR;
+
+      const files = document.getElementById("attachments").files;
+      if (files.length > 6) { fail("Please attach at most 6 files."); return; }
+      let total = 0;
+      for (const f of files) total += f.size;
+      if (total > 20 * 1024 * 1024) { fail("Attachments are too large — 20 MB total maximum."); return; }
+
+      button.disabled = true;
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(contactForm),
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          if (window.gtag) gtag("event", "generate_lead", { form: "pricing-quote" });
+          contactForm.classList.add("is-hidden");
+          success.style.display = "block";
+          success.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          error.style.display = "block";
+          button.disabled = false;
+        }
+      } catch (err) {
+        error.style.display = "block";
+        button.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
