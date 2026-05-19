@@ -118,3 +118,27 @@ footer a:hover{color:var(--navy)}
   .heroin img{order:-1}
   .nav{flex-wrap:wrap;gap:10px}
 }
+
+/* Dark mode — applied automatically for visitors whose OS/browser is set to dark */
+@media (prefers-color-scheme: dark){
+  :root{
+    --cream:#0f1722;
+    --card:#1a2330;
+    --ink:#e9eef5;
+    --mut:#9aa7b6;
+    --navy:#3a5fa8;
+    --navy-d:#2e4d86;
+    --navy2:#5077c0;
+    --line:#2b3645;
+  }
+  .heroin{background:linear-gradient(160deg,#1b2636,#0f1722 60%)}
+  .btn{color:#f3f6fb}
+  .btn.o{background:var(--card);color:#bcd0f5}
+  .pill{background:var(--card);color:#bcd0f5;border-color:var(--line)}
+  input,textarea{background:#121a26;color:var(--ink)}
+  input::placeholder,textarea::placeholder{color:#71808f}
+  input:focus,textarea:focus{box-shadow:0 0 0 3px rgba(80,119,192,.30)}
+  .card .ic,.success .ic{color:#f3f6fb}
+  .ctain{background:#1b2c52;color:#e7eefb}
+  .err{background:#3a2020;border-color:#6e3b38;color:#f0b8b4}
+}
