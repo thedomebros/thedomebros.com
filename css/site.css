@@ -20,6 +20,8 @@ img{max-width:100%}
 .brand{font-weight:800;font-size:21px;color:var(--navy);text-decoration:none}
 .nav .links a{margin-left:26px;text-decoration:none;color:var(--mut);font-weight:600;font-size:15px}
 .nav .links a:hover,.nav .links a.active{color:var(--navy)}
+.navtoggle{display:none}
+.hamburger{display:none}
 
 /* Buttons */
 .btn{display:inline-block;text-decoration:none;background:var(--navy);color:var(--cream);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;padding:15px 30px;border-radius:999px;border:0;cursor:pointer;font-size:16px;transition:.2s}
@@ -116,7 +118,12 @@ footer a:hover{color:var(--navy)}
 @media(max-width:860px){
   .heroin{grid-template-columns:1fr;gap:28px;padding:44px 7vw}
   .heroin img{order:-1}
-  .nav{flex-wrap:wrap;gap:10px}
+  .nav{flex-wrap:wrap;gap:0;padding:16px 6vw;align-items:center}
+  .hamburger{display:flex;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .hamburger span{display:block;width:20px;height:2px;margin:0 auto;background:var(--navy);border-radius:2px}
+  .nav .links{display:none;flex-basis:100%;flex-direction:column;margin-top:14px}
+  .nav .links a{margin:0;padding:14px 2px;font-size:16px;border-top:1px solid var(--line)}
+  #navtoggle:checked ~ .links{display:flex}
 }
 
 /* Dark mode — applied automatically for visitors whose OS/browser is set to dark */
