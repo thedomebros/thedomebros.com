@@ -1,7 +1,8 @@
 // TheDomeBros quote-form handler — Cloudflare Worker.
 //
 // Receives the quote form POST from the static site, emails the lead to the
-// business, and sends an auto-reply to the submitter via the Resend API.
+// business (with any uploaded files attached), and sends an auto-reply to the
+// submitter via the Resend API.
 //
 // Required Worker configuration (set in the Cloudflare dashboard, NOT in code):
 //   - Secret  RESEND_API_KEY : your Resend API key
@@ -16,6 +17,11 @@ const ALLOWED_ORIGINS = [
   "https://thedomebros.com",
   "https://www.thedomebros.com",
 ];
+
+// Attachment limits. Resend caps a message at 40MB AFTER base64 encoding;
+// base64 inflates ~37%, so we keep raw uploads well under that for headroom.
+const MAX_FILES = 6;
+const MAX_TOTAL_BYTES = 20 * 1024 * 1024; // 20 MB total across all files
 
 function corsHeaders(origin) {
   const allow = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -38,6 +44,16 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
+}
+
+function arrayBufferToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
 }
 
 async function sendEmail(apiKey, payload) {
@@ -93,22 +109,51 @@ export default {
       return json({ success: false, message: "Please enter a valid email." }, 400, origin);
     }
 
+    // Optional file attachments (form field name "attachments", multiple).
+    const files = form.getAll("attachments").filter(
+      (f) => f && typeof f === "object" && "size" in f && f.size > 0 && f.name
+    );
+    if (files.length > MAX_FILES) {
+      return json({ success: false, message: `Please attach at most ${MAX_FILES} files.` }, 400, origin);
+    }
+    const totalBytes = files.reduce((n, f) => n + f.size, 0);
+    if (totalBytes > MAX_TOTAL_BYTES) {
+      const mb = Math.round(MAX_TOTAL_BYTES / (1024 * 1024));
+      return json({ success: false, message: `Attachments total too large (max ${mb} MB).` }, 400, origin);
+    }
+
+    let attachments = [];
+    try {
+      attachments = await Promise.all(
+        files.map(async (f) => ({
+          filename: f.name,
+          content: arrayBufferToBase64(await f.arrayBuffer()),
+        }))
+      );
+    } catch {
+      return json({ success: false, message: "Could not read the attached files." }, 400, origin);
+    }
+
     const rows = { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Message: message };
     const leadHtml = Object.entries(rows)
       .map(([k, v]) => `<p><strong>${k}:</strong><br>${escapeHtml(v).replace(/\n/g, "<br>")}</p>`)
       .join("");
+    const fileNote = attachments.length
+      ? `<p><strong>Attachments:</strong> ${attachments.length} file(s)</p>`
+      : "";
 
     try {
-      // 1) Lead to the business.
+      // 1) Lead to the business (includes any uploaded files).
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
         reply_to: email,
         subject: `New quote request — ${name}`,
-        html: `<h2>New quote request from thedomebros.com</h2>${leadHtml}`,
+        html: `<h2>New quote request from thedomebros.com</h2>${leadHtml}${fileNote}`,
+        ...(attachments.length ? { attachments } : {}),
       });
 
-      // 2) Auto-reply to the submitter.
+      // 2) Auto-reply to the submitter (no attachments).
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [email],
@@ -117,7 +162,7 @@ export default {
           `<p>Hi ${escapeHtml(name)},</p>` +
           `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
           `request and will review your pool details and get back to you soon.</p>` +
-          `<p><strong>What you sent us:</strong></p>${leadHtml}` +
+          `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
           `<p>— TheDomeBros</p>`,
       });
     } catch (err) {

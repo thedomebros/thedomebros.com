@@ -53,6 +53,10 @@
         <label for="message">Message</label>
         <textarea id="message" name="message" placeholder="Tell us about your pool and deck..." required></textarea>
 
+        <label for="attachments">Photos of your pool &amp; deck <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+        <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
+        <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
+
         <button class="btn" id="submitButton" type="submit">Send request</button>
         <div class="err" id="submitErrorMessage">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div>
       </form>
@@ -72,12 +76,22 @@
 
   <script>
     const contactForm = document.getElementById("contactForm");
+    const DEFAULT_ERR = "Something went wrong — please email us directly at contact@thedomebros.com.";
     contactForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       const button = document.getElementById("submitButton");
       const success = document.getElementById("submitSuccessMessage");
       const error = document.getElementById("submitErrorMessage");
+      const fail = (msg) => { error.textContent = msg; error.style.display = "block"; button.disabled = false; };
       error.style.display = "none";
+      error.textContent = DEFAULT_ERR;
+
+      const files = document.getElementById("attachments").files;
+      if (files.length > 6) { fail("Please attach at most 6 files."); return; }
+      let total = 0;
+      for (const f of files) total += f.size;
+      if (total > 20 * 1024 * 1024) { fail("Attachments are too large — 20 MB total maximum."); return; }
+
       button.disabled = true;
       try {
         const response = await fetch(contactForm.action, {
