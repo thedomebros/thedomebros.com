@@ -17,8 +17,7 @@ img{max-width:100%}
 
 /* Nav */
 .nav{display:flex;align-items:center;justify-content:space-between;padding:24px 6vw;max-width:1240px;margin:0 auto}
-.brand{display:flex;align-items:center;text-decoration:none}
-.brand img{height:44px;width:auto;display:block;border-radius:10px}
+.brand{font-weight:800;font-size:21px;color:var(--navy);text-decoration:none}
 .nav .links a{margin-left:26px;text-decoration:none;color:var(--mut);font-weight:600;font-size:15px}
 .nav .links a:hover,.nav .links a.active{color:var(--navy)}
 .navtoggle{display:none}
