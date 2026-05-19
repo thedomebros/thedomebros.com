@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Get a free, no-obligation quote to turn your Utah County pool into a year-round, swimmable space with an air-supported pool dome." />
+  <meta name="author" content="TheDomeBros" />
+  <meta name="robots" content="noindex" />
+  <title>Free Pool Dome Quote — Utah County | TheDomeBros</title>
+  <link rel="icon" type="image/png" href="/assets/favicon-domebros.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="/css/site.css" rel="stylesheet" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E3Z0CTDFY2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E3Z0CTDFY2');
+  </script>
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="/">TheDomeBros</a>
+  </nav>
+
+  <section class="hero">
+    <div class="heroin">
+      <div>
+        <span class="pill">Serving Utah County</span>
+        <h1>Swim your pool year-round.</h1>
+        <p>TheDomeBros sells and installs air-supported pool domes that turn your existing outdoor pool into a usable space through every season. Get a <strong>free, no-obligation quote</strong> — tell us your pool size and we'll send an estimate.</p>
+        <ul style="list-style:none;color:var(--mut);font-size:16px;line-height:2.2">
+          <li>&#10003;&nbsp; Year-round swimming &mdash; spring through winter</li>
+          <li>&#10003;&nbsp; Warmer water, blocked wind, lower heating cost</li>
+          <li>&#10003;&nbsp; We measure, anchor, install, and service it</li>
+          <li>&#10003;&nbsp; Quietly air-supported &mdash; no poles or framing</li>
+        </ul>
+      </div>
+      <div class="formwrap" style="margin:0" id="quote-form">
+        <form id="contactForm" class="formcard" action="https://quote-form.thedomebros-com.workers.dev" method="POST">
+          <h2 style="font-size:24px;margin-bottom:6px">Get your free quote</h2>
+          <p class="note" style="text-align:left;margin:0 0 4px">Usually a quick reply within a day or two.</p>
+          <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" placeholder="Your name" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+          <label for="phone">Phone <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" placeholder="(555) 000-0000" />
+
+          <label for="poolsize">Approx. pool size (width &times; length)</label>
+          <input id="poolsize" name="pool_size" type="text" placeholder="e.g. 16 ft x 32 ft" required />
+
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Tell us about your pool and deck..." required></textarea>
+
+          <label for="attachments">Photos of your pool &amp; deck <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+          <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
+          <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
+
+          <button class="btn" id="submitButton" type="submit">Request my free quote</button>
+          <div class="err" id="submitErrorMessage">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div>
+        </form>
+
+        <div class="success" id="submitSuccessMessage">
+          <div class="ic">&#10003;</div>
+          <h2>Quote request sent</h2>
+          <p>Thanks for reaching out to TheDomeBros. We've received your quote request and will review your pool details and get back to you soon.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tight">
+    <div class="quote">
+      <div class="q">"A pool dome gives your backyard pool the feeling of an indoor pool without building a permanent room around it."</div>
+      <div class="by">TheDomeBros &middot; Pool Dome Sales &amp; Installation &middot; Utah County</div>
+    </div>
+    <div style="text-align:center;margin-top:34px"><a class="btn" href="#quote-form">Get my free quote</a></div>
+  </section>
+
+  <footer><div class="in">
+    <span>Copyright &copy; TheDomeBros LLC 2026</span>
+    <span><a href="/privacy">Privacy</a></span>
+  </div></footer>
+
+  <script>
+    const contactForm = document.getElementById("contactForm");
+    const DEFAULT_ERR = "Something went wrong — please email us directly at contact@thedomebros.com.";
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const button = document.getElementById("submitButton");
+      const success = document.getElementById("submitSuccessMessage");
+      const error = document.getElementById("submitErrorMessage");
+      const fail = (msg) => { error.textContent = msg; error.style.display = "block"; button.disabled = false; };
+      error.style.display = "none";
+      error.textContent = DEFAULT_ERR;
+
+      const files = document.getElementById("attachments").files;
+      if (files.length > 6) { fail("Please attach at most 6 files."); return; }
+      let total = 0;
+      for (const f of files) total += f.size;
+      if (total > 20 * 1024 * 1024) { fail("Attachments are too large — 20 MB total maximum."); return; }
+
+      button.disabled = true;
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(contactForm),
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          if (window.gtag) gtag("event", "generate_lead", { form: "landing-quote" });
+          contactForm.classList.add("is-hidden");
+          success.style.display = "block";
+          success.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          error.style.display = "block";
+          button.disabled = false;
+        }
+      } catch (err) {
+        error.style.display = "block";
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
