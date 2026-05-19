@@ -102,7 +102,7 @@ export default {
     const poolSize = (form.get("pool_size") || "").toString().trim();
     const message = (form.get("message") || "").toString().trim();
 
-    if (!name || !email || !phone || !poolSize || !message) {
+    if (!name || !email || !poolSize || !message) {
       return json({ success: false, message: "Please fill in all fields." }, 400, origin);
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
