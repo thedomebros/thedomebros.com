@@ -101,6 +101,8 @@ export default {
     const phone = (form.get("phone") || "").toString().trim();
     const poolSize = (form.get("pool_size") || "").toString().trim();
     const message = (form.get("message") || "").toString().trim();
+    const _src = (form.get("source") || "").toString().trim().toLowerCase();
+    const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
 
     if (!name || !email || !poolSize || !message) {
       return json({ success: false, message: "Please fill in all fields." }, 400, origin);
@@ -148,8 +150,8 @@ export default {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
         reply_to: email,
-        subject: `New quote request — ${name}`,
-        html: `<h2>New quote request from thedomebros.com</h2>${leadHtml}${fileNote}`,
+        subject: `New quote request (${source}) — ${name}`,
+        html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${fileNote}`,
         ...(attachments.length ? { attachments } : {}),
       });
 
