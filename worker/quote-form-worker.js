@@ -56,6 +56,31 @@ function arrayBufferToBase64(buf) {
   return btoa(binary);
 }
 
+// Branded shell for customer-facing emails (matches the site's design system).
+// Table-based with inline styles for email-client compatibility; the logo is
+// loaded from the live site.
+function brandEmail(inner) {
+  return (
+    `<!doctype html><html><body style="margin:0;padding:0;background:#f6f4ef;">` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f4ef;padding:28px 0;">` +
+    `<tr><td align="center">` +
+    `<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:94%;background:#fffdf8;border:1px solid #e4ddcf;border-radius:16px;">` +
+    `<tr><td style="padding:24px 32px 18px;border-bottom:1px solid #e4ddcf;" align="left">` +
+    `<a href="https://thedomebros.com" style="text-decoration:none;">` +
+    `<img src="https://thedomebros.com/assets/logo.png" alt="TheDomeBros" width="150" style="display:block;border:0;max-width:150px;height:auto;"></a>` +
+    `</td></tr>` +
+    `<tr><td style="padding:26px 32px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#1f2a37;">` +
+    inner +
+    `</td></tr>` +
+    `<tr><td style="padding:16px 32px 20px;border-top:1px solid #e4ddcf;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.8;color:#5b6675;">` +
+    `TheDomeBros LLC &middot; Cedar Hills, Utah &middot; Serving Utah County<br>` +
+    `<a href="https://thedomebros.com" style="color:#1f3b73;">thedomebros.com</a> &middot; ` +
+    `<a href="mailto:contact@thedomebros.com" style="color:#1f3b73;">contact@thedomebros.com</a>` +
+    `</td></tr>` +
+    `</table></td></tr></table></body></html>`
+  );
+}
+
 async function sendEmail(apiKey, payload) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -171,7 +196,7 @@ export default {
         subject: isQuick
           ? "How a pool dome works — TheDomeBros"
           : "We received your quote request — TheDomeBros",
-        html: isQuick
+        html: brandEmail(isQuick
           ? `<p>Hi,</p>` +
             `<p>Thanks for your interest in TheDomeBros! We'll be in touch soon to answer any ` +
             `questions and walk you through how it all works. In the meantime, here's the short version:</p>` +
@@ -193,7 +218,7 @@ export default {
             `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
             `request and will review your pool details and get back to you soon.</p>` +
             `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
-            `<p>— TheDomeBros</p>`,
+            `<p>— TheDomeBros</p>`),
       });
     } catch (err) {
       return json({ success: false, message: "Could not send. Please email us directly." }, 502, origin);
