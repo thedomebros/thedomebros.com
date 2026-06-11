@@ -129,13 +129,18 @@ export default {
     const _src = (form.get("source") || "").toString().trim().toLowerCase();
     const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
 
-    // Quick-capture forms (source "quick-*") submit only an email address;
-    // every other form still requires the full set of fields.
+    // Quick-capture forms (source "quick-*") submit only an email address OR
+    // a phone number; every other form still requires the full set of fields.
     const isQuick = source.startsWith("quick");
-    if (!email || (!isQuick && (!name || !poolSize || !message))) {
+    if (isQuick) {
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (!email && (phoneDigits.length < 10 || phoneDigits.length > 15)) {
+        return json({ success: false, message: "Please enter your email or phone number." }, 400, origin);
+      }
+    } else if (!name || !email || !poolSize || !message) {
       return json({ success: false, message: "Please fill in all fields." }, 400, origin);
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return json({ success: false, message: "Please enter a valid email." }, 400, origin);
     }
 
@@ -165,7 +170,7 @@ export default {
     }
 
     const rows = isQuick
-      ? { Email: email }
+      ? Object.fromEntries([["Email", email], ["Phone", phone]].filter(([, v]) => v))
       : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Message: message };
     const leadHtml = Object.entries(rows)
       .map(([k, v]) => `<p><strong>${k}:</strong><br>${escapeHtml(v).replace(/\n/g, "<br>")}</p>`)
@@ -176,21 +181,25 @@ export default {
 
     try {
       // 1) Lead to the business (includes any uploaded files).
+      const phoneOnlyNote = isQuick && !email
+        ? `<p><strong>Phone-only lead — text them.</strong> (No auto-reply was sent.)</p>`
+        : "";
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
-        reply_to: email,
+        ...(email ? { reply_to: email } : {}),
         subject: isQuick
-          ? `New quick lead (${source}) — ${email}`
+          ? `New quick lead (${source}) — ${email || phone}`
           : `New quote request (${source}) — ${name}`,
-        html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${fileNote}`,
+        html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${phoneOnlyNote}${fileNote}`,
         ...(attachments.length ? { attachments } : {}),
       });
 
       // 2) Auto-reply to the submitter (no attachments). Two paths:
       //    quick capture ("See how it works") gets a how-it-works explainer;
       //    the full form gets the quote-request confirmation.
-      await sendEmail(env.RESEND_API_KEY, {
+      //    Phone-only quick leads get no auto-reply — the business texts them.
+      if (email) await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [email],
         subject: isQuick

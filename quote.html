@@ -40,11 +40,11 @@
         </ul>
         <form id="quickForm" class="quickcap" style="margin-top:22px">
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
-          <input type="email" name="email" placeholder="you@example.com" aria-label="Your email address" required />
+          <input type="text" name="contact" placeholder="you@example.com or (555) 123-4567" aria-label="Your email address or phone number" required />
           <button class="btn" type="submit" id="quickButton">See how it works</button>
         </form>
-        <div class="quickdone" id="quickDone" style="margin-top:22px">&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works. Check your inbox in the meantime.</div>
-        <p class="quicknote">In a hurry? Just your email &mdash; we'll take it from there. Want a faster, more accurate quote? <a href="#quote-form">Fill out the form &rarr;</a></p>
+        <div class="quickdone" id="quickDone" style="margin-top:22px">&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works.</div>
+        <p class="quicknote">In a hurry? Just your email or phone number &mdash; we'll take it from there. Want a faster, more accurate quote? <a href="#quote-form">Fill out the form &rarr;</a></p>
       </div>
       <div class="formwrap" style="margin:0" id="quote-form">
         <form id="contactForm" class="formcard" action="https://quote-form.thedomebros-com.workers.dev" method="POST">
@@ -100,12 +100,24 @@
 
   <script>
     const quickForm = document.getElementById("quickForm");
+    const quickField = quickForm.elements["contact"];
+    quickField.addEventListener("input", () => quickField.setCustomValidity(""));
     quickForm.addEventListener("submit", async function (e) {
       e.preventDefault();
+      const value = quickField.value.trim();
+      const digits = value.replace(/\D/g, "");
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      const isPhone = !isEmail && !value.includes("@") && digits.length >= 10 && digits.length <= 15;
+      if (!isEmail && !isPhone) {
+        quickField.setCustomValidity("Please enter a valid email address or phone number.");
+        quickField.reportValidity();
+        return;
+      }
       const btn = document.getElementById("quickButton");
       btn.disabled = true;
       const data = new FormData(quickForm);
       data.append("source", "quick-landing");
+      data.append(isEmail ? "email" : "phone", value);
       try {
         const res = await fetch("https://quote-form.thedomebros-com.workers.dev", {
           method: "POST",
@@ -115,8 +127,12 @@
         const out = await res.json();
         if (res.ok && out.success) {
           if (window.gtag) gtag("event", "generate_lead", { form: "quick-landing" });
+          const done = document.getElementById("quickDone");
+          done.innerHTML = isEmail
+            ? "&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works. Check your inbox in the meantime."
+            : "&#10003;&nbsp; Got it &mdash; we'll text you shortly to answer your questions and explain how it works.";
           quickForm.style.display = "none";
-          document.getElementById("quickDone").style.display = "block";
+          done.style.display = "block";
           return;
         }
         throw new Error();
