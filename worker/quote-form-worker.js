@@ -96,7 +96,7 @@ async function sendEmail(apiKey, payload) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
 
     if (request.method === "OPTIONS") {
@@ -206,7 +206,10 @@ export default {
       //    quick capture ("See how it works") gets a how-it-works explainer;
       //    the full form gets the quote-request confirmation.
       //    Phone-only quick leads get no auto-reply — the business texts them.
-      if (email) await sendEmail(env.RESEND_API_KEY, {
+      //    Runs in the background (waitUntil) so the visitor isn't kept
+      //    waiting on a second email send; the lead email above is the one
+      //    that must succeed before we report success.
+      if (email) ctx.waitUntil(sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [email],
         subject: isQuick
@@ -235,7 +238,7 @@ export default {
             `request and will review your pool details and get back to you soon.</p>` +
             `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
             `<p>— TheDomeBros</p>`),
-      });
+      }).catch(() => {}));
     } catch (err) {
       return json({ success: false, message: "Could not send. Please email us directly." }, 502, origin);
     }
@@ -245,13 +248,11 @@ export default {
     // LEAD_LOG_URL var in the Cloudflare dashboard; failures never block the
     // submission.
     if (env.LEAD_LOG_URL) {
-      try {
-        await fetch(env.LEAD_LOG_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, message }),
-        });
-      } catch {}
+      ctx.waitUntil(fetch(env.LEAD_LOG_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, message }),
+      }).catch(() => {}));
     }
 
     return json({ success: true }, 200, origin);
