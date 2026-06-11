@@ -41,7 +41,7 @@
     <div class="links">
       <a href="/" class="active">Home</a>
       <a href="/about">About</a>
-      <a href="/pricing">Request a Quote</a>
+      <a href="/pricing">Request a Free Quote</a>
       <a href="/faq">FAQ</a>
       <a href="/contact">Contact</a>
     </div>
@@ -54,13 +54,10 @@
         <span class="pill">Pool dome &amp; enclosure sales &amp; installation</span>
         <h1>Turn your outdoor pool into a year-round space.</h1>
         <p>TheDomeBros sells and installs air-supported vinyl pool domes that anchor into your concrete deck, hold their shape with gentle air pressure, and keep your pool usable through changing weather.</p>
-        <form id="quickForm" class="quickcap">
-          <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
-          <input type="email" name="email" placeholder="you@example.com" aria-label="Your email address" required />
-          <button class="btn" type="submit" id="quickButton">Get my free quote</button>
-        </form>
-        <div class="quickdone" id="quickDone">&#10003;&nbsp; Got it &mdash; check your inbox. We'll reach out shortly about your free quote.</div>
-        <p class="quicknote">Just your email &mdash; we'll take it from there. Want a faster, more accurate quote? <a href="/pricing#quote-form">Tell us about your pool &rarr;</a> &middot; <a href="#process">See how it works</a></p>
+        <div class="acts">
+          <a class="btn" href="/pricing">Get a free quote</a>
+          <a class="btn o" href="#process">How it works</a>
+        </div>
       </div>
       <img src="/Images/Gray%20Bubble%20Cover%20Cropped.png" alt="Air-supported pool dome enclosure over a backyard swimming pool" />
     </div>
@@ -108,35 +105,5 @@
     <span>Copyright &copy; TheDomeBros 2026</span>
     <span><a href="/privacy">Privacy</a> &middot; <a href="#!">Terms</a> &middot; <a href="/contact">Contact</a></span>
   </div></footer>
-
-  <script>
-    const quickForm = document.getElementById("quickForm");
-    quickForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const btn = document.getElementById("quickButton");
-      btn.disabled = true;
-      const data = new FormData(quickForm);
-      data.append("source", "quick-home");
-      try {
-        const res = await fetch("https://quote-form.thedomebros-com.workers.dev", {
-          method: "POST",
-          headers: { Accept: "application/json" },
-          body: data,
-        });
-        const out = await res.json();
-        if (res.ok && out.success) {
-          if (window.gtag) gtag("event", "generate_lead", { form: "quick-home" });
-          quickForm.style.display = "none";
-          document.getElementById("quickDone").style.display = "block";
-          return;
-        }
-        throw new Error();
-      } catch (err) {
-        // Don't lose the lead — send them to the full form instead.
-        btn.disabled = false;
-        window.location.href = "/pricing#quote-form";
-      }
-    });
-  </script>
 </body>
 </html>

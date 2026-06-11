@@ -38,6 +38,13 @@
           <li>&#10003;&nbsp; We measure, anchor, install, and service it</li>
           <li>&#10003;&nbsp; Quietly air-supported &mdash; no poles or framing</li>
         </ul>
+        <form id="quickForm" class="quickcap" style="margin-top:22px">
+          <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+          <input type="email" name="email" placeholder="you@example.com" aria-label="Your email address" required />
+          <button class="btn" type="submit" id="quickButton">Get my free quote</button>
+        </form>
+        <div class="quickdone" id="quickDone" style="margin-top:22px">&#10003;&nbsp; Got it &mdash; check your inbox. We'll reach out shortly about your free quote.</div>
+        <p class="quicknote">In a hurry? Just your email &mdash; we'll take it from there. Want a faster, more accurate quote? <a href="#quote-form">Fill out the form &rarr;</a></p>
       </div>
       <div class="formwrap" style="margin:0" id="quote-form">
         <form id="contactForm" class="formcard" action="https://quote-form.thedomebros-com.workers.dev" method="POST">
@@ -92,6 +99,34 @@
   </div></footer>
 
   <script>
+    const quickForm = document.getElementById("quickForm");
+    quickForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById("quickButton");
+      btn.disabled = true;
+      const data = new FormData(quickForm);
+      data.append("source", "quick-landing");
+      try {
+        const res = await fetch("https://quote-form.thedomebros-com.workers.dev", {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: data,
+        });
+        const out = await res.json();
+        if (res.ok && out.success) {
+          if (window.gtag) gtag("event", "generate_lead", { form: "quick-landing" });
+          quickForm.style.display = "none";
+          document.getElementById("quickDone").style.display = "block";
+          return;
+        }
+        throw new Error();
+      } catch (err) {
+        // Don't lose the lead — point them at the full form instead.
+        btn.disabled = false;
+        document.getElementById("quote-form").scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
     const contactForm = document.getElementById("contactForm");
     const DEFAULT_ERR = "Something went wrong — please email us directly at contact@thedomebros.com.";
     contactForm.addEventListener("submit", async function (e) {
