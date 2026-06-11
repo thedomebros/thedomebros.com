@@ -46,7 +46,7 @@ img{max-width:100%}
 .quickdone{display:none;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;max-width:460px}
 .quicknote{color:var(--mut);font-size:14px;margin-top:14px;max-width:32em}
 .quicknote a{color:var(--navy2);font-weight:600}
-.heroin img{width:100%;border-radius:24px}
+.heroin img{width:100%;height:auto;border-radius:24px}
 
 /* Sections */
 .sec{max-width:1240px;margin:0 auto;padding:70px 6vw}
