@@ -162,17 +162,31 @@ export default {
         ...(attachments.length ? { attachments } : {}),
       });
 
-      // 2) Auto-reply to the submitter (no attachments).
+      // 2) Auto-reply to the submitter (no attachments). Two paths:
+      //    quick capture ("See how it works") gets a how-it-works explainer;
+      //    the full form gets the quote-request confirmation.
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [email],
-        subject: "We received your quote request — TheDomeBros",
+        subject: isQuick
+          ? "How a pool dome works — TheDomeBros"
+          : "We received your quote request — TheDomeBros",
         html: isQuick
           ? `<p>Hi,</p>` +
-            `<p>Thanks for requesting a free quote from TheDomeBros — we'll reach out shortly.</p>` +
-            `<p><strong>Want a faster, more accurate quote?</strong> Just reply to this email with ` +
+            `<p>Thanks for your interest in TheDomeBros! Here's how a pool dome works:</p>` +
+            `<ul>` +
+            `<li><strong>Air-supported, no framing.</strong> A quiet blower keeps gentle positive ` +
+            `pressure inside, so the vinyl dome holds its shape over your pool with no poles or ` +
+            `heavy structure.</li>` +
+            `<li><strong>Anchored to your deck.</strong> We measure your pool and surrounding ` +
+            `concrete, then fasten the dome's perimeter to anchors set into the deck.</li>` +
+            `<li><strong>Swim year-round.</strong> The dome traps warmth and blocks wind, keeping ` +
+            `your outdoor pool comfortable and usable through every season. We can also take it ` +
+            `down, store it, and put it back up each year.</li>` +
+            `</ul>` +
+            `<p><strong>Want a free, no-obligation quote?</strong> Just reply to this email with ` +
             `your approximate pool size (width &times; length) and a photo or two of your pool and ` +
-            `the concrete deck around it.</p>` +
+            `the concrete deck around it &mdash; we'll usually get back to you within a day or two.</p>` +
             `<p>— TheDomeBros</p>`
           : `<p>Hi ${escapeHtml(name)},</p>` +
             `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
