@@ -181,8 +181,15 @@ export default {
 
     try {
       // 1) Lead to the business (includes any uploaded files).
+      // Phone-only leads get a ready-to-send text template for a fast,
+      // personal first touch (send it from the Google Voice app).
       const phoneOnlyNote = isQuick && !email
-        ? `<p><strong>Phone-only lead — text them.</strong> (No auto-reply was sent.)</p>`
+        ? `<p><strong>Phone-only lead — text them.</strong> (No auto-reply was sent.)</p>` +
+          `<p>Ready-to-send template (copy into Google Voice):</p>` +
+          `<blockquote style="border-left:3px solid #1f3b73;margin:0;padding:8px 14px;background:#f6f4ef;">` +
+          `Hi, this is Carter from TheDomeBros — saw you wanted to hear how the pool dome works. ` +
+          `Happy to answer any questions! When's a good time for a quick call, or want me to just ` +
+          `send the details?</blockquote>`
         : "";
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
@@ -231,6 +238,20 @@ export default {
       });
     } catch (err) {
       return json({ success: false, message: "Could not send. Please email us directly." }, 502, origin);
+    }
+
+    // Optional lead log: append the lead to a Google Sheet via an Apps Script
+    // web app (see worker/lead-log-apps-script.js). Configured with the
+    // LEAD_LOG_URL var in the Cloudflare dashboard; failures never block the
+    // submission.
+    if (env.LEAD_LOG_URL) {
+      try {
+        await fetch(env.LEAD_LOG_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, message }),
+        });
+      } catch {}
     }
 
     return json({ success: true }, 200, origin);
