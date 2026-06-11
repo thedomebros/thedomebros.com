@@ -173,7 +173,8 @@ export default {
           : "We received your quote request — TheDomeBros",
         html: isQuick
           ? `<p>Hi,</p>` +
-            `<p>Thanks for your interest in TheDomeBros! Here's how a pool dome works:</p>` +
+            `<p>Thanks for your interest in TheDomeBros! We'll be in touch soon to answer any ` +
+            `questions and walk you through how it all works. In the meantime, here's the short version:</p>` +
             `<ul>` +
             `<li><strong>Air-supported, no framing.</strong> A quiet blower keeps gentle positive ` +
             `pressure inside, so the vinyl dome holds its shape over your pool with no poles or ` +
