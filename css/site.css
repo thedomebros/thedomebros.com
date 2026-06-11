@@ -40,6 +40,12 @@ img{max-width:100%}
 .heroin.solo p{margin-left:auto;margin-right:auto}
 .acts{display:flex;gap:14px;flex-wrap:wrap}
 .heroin.solo .acts{justify-content:center}
+.quickcap{display:flex;gap:10px;max-width:460px;flex-wrap:wrap}
+.quickcap input{flex:1 1 220px;width:auto;border-radius:999px;padding:14px 20px}
+.quickcap .btn{flex:0 0 auto}
+.quickdone{display:none;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;max-width:460px}
+.quicknote{color:var(--mut);font-size:14px;margin-top:14px;max-width:32em}
+.quicknote a{color:var(--navy2);font-weight:600}
 .heroin img{width:100%;border-radius:24px}
 
 /* Sections */
@@ -157,4 +163,5 @@ footer .areas{max-width:1240px;margin:0 auto;padding:18px 6vw 0;font-size:13px;c
   .card .ic,.success .ic{color:#f3f6fb}
   .ctain{background:#1b2c52;color:#e7eefb}
   .err{background:#3a2020;border-color:#6e3b38;color:#f0b8b4}
+  .quickdone{background:var(--card)}
 }

@@ -104,7 +104,10 @@ export default {
     const _src = (form.get("source") || "").toString().trim().toLowerCase();
     const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
 
-    if (!name || !email || !poolSize || !message) {
+    // Quick-capture forms (source "quick-*") submit only an email address;
+    // every other form still requires the full set of fields.
+    const isQuick = source.startsWith("quick");
+    if (!email || (!isQuick && (!name || !poolSize || !message))) {
       return json({ success: false, message: "Please fill in all fields." }, 400, origin);
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -136,7 +139,9 @@ export default {
       return json({ success: false, message: "Could not read the attached files." }, 400, origin);
     }
 
-    const rows = { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Message: message };
+    const rows = isQuick
+      ? { Email: email }
+      : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Message: message };
     const leadHtml = Object.entries(rows)
       .map(([k, v]) => `<p><strong>${k}:</strong><br>${escapeHtml(v).replace(/\n/g, "<br>")}</p>`)
       .join("");
@@ -150,7 +155,9 @@ export default {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
         reply_to: email,
-        subject: `New quote request (${source}) — ${name}`,
+        subject: isQuick
+          ? `New quick lead (${source}) — ${email}`
+          : `New quote request (${source}) — ${name}`,
         html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${fileNote}`,
         ...(attachments.length ? { attachments } : {}),
       });
@@ -160,12 +167,18 @@ export default {
         from: env.MAIL_FROM,
         to: [email],
         subject: "We received your quote request — TheDomeBros",
-        html:
-          `<p>Hi ${escapeHtml(name)},</p>` +
-          `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
-          `request and will review your pool details and get back to you soon.</p>` +
-          `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
-          `<p>— TheDomeBros</p>`,
+        html: isQuick
+          ? `<p>Hi,</p>` +
+            `<p>Thanks for requesting a free quote from TheDomeBros — we'll reach out shortly.</p>` +
+            `<p><strong>Want a faster, more accurate quote?</strong> Just reply to this email with ` +
+            `your approximate pool size (width &times; length) and a photo or two of your pool and ` +
+            `the concrete deck around it.</p>` +
+            `<p>— TheDomeBros</p>`
+          : `<p>Hi ${escapeHtml(name)},</p>` +
+            `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
+            `request and will review your pool details and get back to you soon.</p>` +
+            `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
+            `<p>— TheDomeBros</p>`,
       });
     } catch (err) {
       return json({ success: false, message: "Could not send. Please email us directly." }, 502, origin);
