@@ -51,6 +51,7 @@ img{max-width:100%}
   .stickycta{display:block;position:fixed;left:50%;transform:translateX(-50%);width:max-content;bottom:14px;z-index:700;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
   body.has-sticky{padding-bottom:84px}
 }
+.heroin>*{min-width:0}
 .heroin ul li{padding-left:1.4em;text-indent:-1.4em;overflow-wrap:anywhere}
 .heroin img{width:100%;height:auto;border-radius:24px}
 
@@ -104,6 +105,7 @@ input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;paddin
 input:focus,textarea:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(58,95,168,.18)}
 textarea{min-height:140px;resize:vertical}
 .formcard{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:36px}
+.formcard a{overflow-wrap:anywhere}
 .formcard .btn{width:100%;margin-top:24px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .btn.loading{position:relative;color:transparent!important;pointer-events:none}
