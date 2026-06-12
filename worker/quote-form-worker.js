@@ -137,7 +137,7 @@ export default {
       if (!email && (phoneDigits.length < 10 || phoneDigits.length > 15)) {
         return json({ success: false, message: "Please enter your email or phone number." }, 400, origin);
       }
-    } else if (!name || !email || !poolSize || !message) {
+    } else if (!name || !email || !poolSize) {
       return json({ success: false, message: "Please fill in all fields." }, 400, origin);
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -231,7 +231,7 @@ export default {
             `</ul>` +
             `<p><strong>Want a free, no-obligation quote?</strong> Just reply to this email with ` +
             `your approximate pool size (width &times; length) and a photo or two of your pool and ` +
-            `the concrete deck around it &mdash; we typically respond within a day.</p>` +
+            `the concrete deck around it &mdash; we respond quickly.</p>` +
             `<p>— TheDomeBros</p>`
           : `<p>Hi ${escapeHtml(name)},</p>` +
             `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +

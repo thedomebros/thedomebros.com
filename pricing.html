@@ -57,11 +57,18 @@
           <li>&#10003;&nbsp; Pool enclosure sales and installation handled by us</li>
           <li>&#10003;&nbsp; Serving Utah County</li>
         </ul>
+        <form id="quickForm" class="quickcap" style="margin-top:22px">
+          <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+          <input type="text" name="contact" placeholder="Email or phone number" aria-label="Your email address or phone number" required />
+          <button class="btn" type="submit" id="quickButton">See how it works</button>
+        </form>
+        <div class="quickdone" id="quickDone" style="margin-top:22px">&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works.</div>
+        <p class="quicknote">In a hurry? Just your email or phone number &mdash; we'll take it from there. Or fill out the form for the fastest, most accurate quote.</p>
       </div>
       <div class="formwrap" style="margin:0" id="quote-form">
         <form id="contactForm" class="formcard" action="https://quote-form.thedomebros-com.workers.dev" method="POST">
           <h2 style="font-size:24px;margin-bottom:6px">Get your free quote</h2>
-          <p class="note" style="text-align:left;margin:0 0 4px">We typically respond within a day.</p>
+          <p class="note" style="text-align:left;margin:0 0 4px">We respond quickly.</p>
           <input type="hidden" name="source" value="pricing" />
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
 
@@ -77,8 +84,8 @@
           <label for="poolsize">Approx. pool size (width &times; length)</label>
           <input id="poolsize" name="pool_size" type="text" placeholder="e.g. 16 ft x 32 ft" required />
 
-          <label for="message">Message</label>
-          <textarea id="message" name="message" placeholder="Tell us about your pool and deck..." required></textarea>
+          <label for="message">Message <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
+          <textarea id="message" name="message" placeholder="Tell us about your pool and deck..."></textarea>
 
           <label for="attachments">Photos of your pool &amp; deck <span style="font-weight:400;color:var(--mut)">(optional)</span></label>
           <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
@@ -105,6 +112,52 @@
   </div></footer>
 
   <script>
+    const quickForm = document.getElementById("quickForm");
+    const quickField = quickForm.elements["contact"];
+    quickField.addEventListener("input", () => quickField.setCustomValidity(""));
+    quickForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const value = quickField.value.trim();
+      const digits = value.replace(/\D/g, "");
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      const isPhone = !isEmail && !value.includes("@") && digits.length >= 10 && digits.length <= 15;
+      if (!isEmail && !isPhone) {
+        quickField.setCustomValidity("Please enter a valid email address or phone number.");
+        quickField.reportValidity();
+        return;
+      }
+      const btn = document.getElementById("quickButton");
+      btn.disabled = true;
+      btn.classList.add("loading");
+      const data = new FormData(quickForm);
+      data.append("source", "quick-pricing");
+      data.append(isEmail ? "email" : "phone", value);
+      try {
+        const res = await fetch("https://quote-form.thedomebros-com.workers.dev", {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: data,
+        });
+        const out = await res.json();
+        if (res.ok && out.success) {
+          if (window.gtag) gtag("event", "generate_lead", { form: "quick-pricing" });
+          const done = document.getElementById("quickDone");
+          done.innerHTML = isEmail
+            ? "&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works. Check your inbox in the meantime."
+            : "&#10003;&nbsp; Got it &mdash; we'll text you shortly to answer your questions and explain how it works.";
+          quickForm.style.display = "none";
+          done.style.display = "block";
+          return;
+        }
+        throw new Error();
+      } catch (err) {
+        // Don't lose the lead — point them at the full form instead.
+        btn.disabled = false;
+        btn.classList.remove("loading");
+        document.getElementById("quote-form").scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
     const contactForm = document.getElementById("contactForm");
     const DEFAULT_ERR = "Something went wrong — please email us directly at contact@thedomebros.com.";
     contactForm.addEventListener("submit", async function (e) {
