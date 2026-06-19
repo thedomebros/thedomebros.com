@@ -202,6 +202,23 @@
         button.classList.remove("loading");
       }
     });
+
+    // --- Form engagement tracking: start + which fields were reached (no field values captured) ---
+    (function () {
+      function track(form, label) {
+        if (!form) return;
+        let started = false;
+        const seen = {};
+        form.addEventListener("focusin", function (e) {
+          const field = e.target.name || e.target.id;
+          if (!field || field === "botcheck" || !window.gtag) return;
+          if (!started) { started = true; gtag("event", "form_start", { form: label }); }
+          if (!seen[field]) { seen[field] = true; gtag("event", "form_progress", { form: label, field: field }); }
+        });
+      }
+      track(contactForm, "pricing-quote");
+      track(quickForm, "quick-pricing");
+    })();
   </script>
 </body>
 </html>
