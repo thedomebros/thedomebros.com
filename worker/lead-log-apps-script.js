@@ -12,11 +12,16 @@
 //   3. Deploy → New deployment → type "Web app":
 //        - Execute as: Me
 //        - Who has access: Anyone
-//      Click Deploy and copy the web app URL (ends in /exec).
+//      Click Deploy. The first deploy will prompt you to authorize the
+//      Sheets permission — accept it. Copy the web app URL (ends in /exec).
 //   4. In the Cloudflare dashboard, on the quote-form Worker, add a plain
 //      variable LEAD_LOG_URL with that URL, then deploy the Worker.
 //
-// Columns: Date | Source | Name | Email | Phone | Pool size | Message | Status
+// NOTE: when you change this code later, re-deploy with "Manage deployments →
+// edit → New version" so the live /exec URL keeps working. If you add or
+// change scopes, Apps Script will prompt you to re-authorize.
+//
+// Columns: Date | Source | Name | Email | Phone | Pool size | Zip | Message | Status
 // "Status" starts as NEW — update it by hand as you work leads
 // (e.g. TEXTED, QUOTED, WON, LOST).
 
@@ -25,7 +30,7 @@ function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("Leads") || ss.insertSheet("Leads");
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["Date", "Source", "Name", "Email", "Phone", "Pool size", "Message", "Status"]);
+    sheet.appendRow(["Date", "Source", "Name", "Email", "Phone", "Pool size", "Zip", "Message", "Status"]);
     sheet.setFrozenRows(1);
   }
   sheet.appendRow([
@@ -35,9 +40,11 @@ function doPost(e) {
     data.email || "",
     data.phone || "",
     data.pool_size || "",
+    data.zip || "",
     data.message || "",
     "NEW",
   ]);
+
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
 }
