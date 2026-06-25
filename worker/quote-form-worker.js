@@ -116,9 +116,11 @@ export default {
       return json({ success: false, message: "Invalid form data" }, 400, origin);
     }
 
-    // Honeypot: a bot fills the hidden "botcheck" field. Pretend success.
+    // Honeypot: a bot fills the hidden "botcheck" field. Pretend success to
+    // the client, but flag lead:false so it doesn't fire a generate_lead
+    // conversion for a bot.
     if ((form.get("botcheck") || "").toString().trim() !== "") {
-      return json({ success: true }, 200, origin);
+      return json({ success: true, lead: false }, 200, origin);
     }
 
     const name = (form.get("name") || "").toString().trim();

@@ -145,7 +145,7 @@
         });
         const out = await res.json();
         if (res.ok && out.success) {
-          if (window.gtag) gtag("event", "generate_lead", { form: "quick-pricing" });
+          if (window.gtag && out.lead !== false) gtag("event", "generate_lead", { form: "quick-pricing" });
           const done = document.getElementById("quickDone");
           done.innerHTML = isEmail
             ? "&#10003;&nbsp; Got it &mdash; we'll be in touch to answer your questions and explain how it works. Check your inbox in the meantime."
@@ -190,7 +190,7 @@
         });
         const data = await response.json();
         if (response.ok && data.success) {
-          if (window.gtag) gtag("event", "generate_lead", { form: "pricing-quote" });
+          if (window.gtag && data.lead !== false) gtag("event", "generate_lead", { form: "pricing-quote" });
           contactForm.classList.add("is-hidden");
           success.style.display = "block";
           success.scrollIntoView({ behavior: "smooth", block: "center" });
