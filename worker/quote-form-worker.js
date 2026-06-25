@@ -95,6 +95,28 @@ async function sendEmail(apiKey, payload) {
   }
 }
 
+// Verify a Cloudflare Turnstile token. Returns true if the visitor passed the
+// bot check. A missing or rejected token returns false; if siteverify itself is
+// unreachable it fails open (returns true), so a Cloudflare outage never blocks
+// real leads.
+async function verifyTurnstile(secret, token, ip) {
+  if (!token) return false;
+  const body = new URLSearchParams();
+  body.append("secret", secret);
+  body.append("response", token);
+  if (ip) body.append("remoteip", ip);
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body,
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return true;
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -147,6 +169,20 @@ export default {
       return json({ success: false, message: "Please enter a valid email." }, 400, origin);
     }
 
+    // Cloudflare Turnstile bot check. Every form fails open: a failed check
+    // never rejects the lead, it just flags it unverified for review — so a
+    // false positive never loses a lead, and strict rejection can be turned on
+    // later if bot volume justifies it. Skipped entirely if no secret is set.
+    let unverified = false;
+    if (env.TURNSTILE_SECRET) {
+      const turnstileOk = await verifyTurnstile(
+        env.TURNSTILE_SECRET,
+        (form.get("cf-turnstile-response") || "").toString(),
+        request.headers.get("CF-Connecting-IP")
+      );
+      if (!turnstileOk) unverified = true;
+    }
+
     // Optional file attachments (form field name "attachments", multiple).
     const files = form.getAll("attachments").filter(
       (f) => f && typeof f === "object" && "size" in f && f.size > 0 && f.name
@@ -194,14 +230,17 @@ export default {
           `Happy to answer any questions! When's a good time for a quick call, or want me to just ` +
           `send the details?</blockquote>`
         : "";
+      const unverifiedNote = unverified
+        ? `<p style="background:#fde2e1;border:1px solid #f5b5b2;border-radius:8px;padding:10px 14px;color:#8a1c16;"><strong>&#9888; UNVERIFIED:</strong> This lead did not pass the Turnstile bot check, but was saved anyway. Treat it with extra caution.</p>`
+        : "";
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
         ...(email ? { reply_to: email } : {}),
-        subject: isQuick
+        subject: (unverified ? "[UNVERIFIED] " : "") + (isQuick
           ? `New quick lead (${source}) — ${email || phone}`
-          : `New quote request (${source}) — ${name}`,
-        html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${phoneOnlyNote}${fileNote}`,
+          : `New quote request (${source}) — ${name}`),
+        html: `<h2>New quote request from thedomebros.com</h2>${unverifiedNote}<p><strong>Source:</strong> ${source}</p>${leadHtml}${phoneOnlyNote}${fileNote}`,
         ...(attachments.length ? { attachments } : {}),
       });
 
@@ -254,7 +293,7 @@ export default {
       ctx.waitUntil(fetch(env.LEAD_LOG_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message }),
+        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message }),
       }).catch(() => {}));
     }
 
