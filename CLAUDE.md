@@ -23,7 +23,12 @@ with a custom domain.
   `.nojekyll` disables Jekyll processing.
 - **Git remote:** `git@github.com-domebros:thedomebros/thedomebros.com.git`
   (note the SSH host alias `github.com-domebros`). Default branch: **master**.
-- **DNS / edge:** registrar Porkbun; Cloudflare in front of the origin.
+- **DNS / edge:** registrar Porkbun, with DNS pointing **directly at GitHub
+  Pages** (`thedomebros.com` resolves to GitHub's IPs `185.199.108–111.153`).
+  Cloudflare does **not** proxy or cache the site — the Cloudflare account is
+  used only for the quote-form Worker (`*.workers.dev`) and Turnstile bot
+  protection. There is no Cloudflare cache to purge; GitHub Pages serves the
+  site through its own CDN, which auto-purges on each push.
 - **Analytics:** Google Analytics 4, measurement ID `G-E3Z0CTDFY2`, inlined in
   every page's `<head>`.
 
