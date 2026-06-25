@@ -211,11 +211,22 @@
         if (!form) return;
         let started = false;
         const seen = {};
+        const filled = {};
         form.addEventListener("focusin", function (e) {
-          const field = e.target.name || e.target.id;
+          const el = e.target;
+          if (el === form || !el.matches("input, select, textarea")) return;
+          const field = el.name;
           if (!field || field === "botcheck" || !window.gtag) return;
           if (!started) { started = true; gtag("event", "form_start", { form: label }); }
           if (!seen[field]) { seen[field] = true; gtag("event", "form_progress", { form: label, field: field }); }
+        });
+        form.addEventListener("focusout", function (e) {
+          const el = e.target;
+          if (el === form || !el.matches("input, select, textarea")) return;
+          const field = el.name;
+          if (!field || field === "botcheck" || !window.gtag) return;
+          if (el.value.trim() === "") return;
+          if (!filled[field]) { filled[field] = true; gtag("event", "form_field_filled", { form: label, field: field }); }
         });
       }
       track(contactForm, "landing-quote");
