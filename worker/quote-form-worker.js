@@ -153,6 +153,8 @@ export default {
     const message = (form.get("message") || "").toString().trim();
     const _src = (form.get("source") || "").toString().trim().toLowerCase();
     const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
+    // Whether the lead ticked the SMS-consent box (both forms send it via FormData).
+    const smsConsent = (form.get("sms_consent") || "").toString().trim().toLowerCase() === "yes";
 
     // Quick-capture forms (source "quick-*") submit only an email address OR
     // a phone number; every other form still requires the full set of fields.
@@ -211,6 +213,8 @@ export default {
     const rows = isQuick
       ? Object.fromEntries([["Email", email], ["Phone", phone]].filter(([, v]) => v))
       : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Zip: zip, Message: message };
+    // Surface SMS consent so you know who you can text vs. who needs verbal consent first.
+    if (phone) rows["Texts OK?"] = smsConsent ? "YES — opted in on the form" : "NO — get verbal consent before texting";
     const leadHtml = Object.entries(rows)
       .map(([k, v]) => `<p><strong>${k}:</strong><br>${escapeHtml(v).replace(/\n/g, "<br>")}</p>`)
       .join("");
@@ -223,12 +227,14 @@ export default {
       // Phone-only leads get a ready-to-send text template for a fast,
       // personal first touch (send it from the Google Voice app).
       const phoneOnlyNote = isQuick && !email
-        ? `<p><strong>Phone-only lead — text them.</strong> (No auto-reply was sent.)</p>` +
-          `<p>Ready-to-send template (copy into Google Voice):</p>` +
-          `<blockquote style="border-left:3px solid #1f3b73;margin:0;padding:8px 14px;background:#f6f4ef;">` +
-          `Hi, this is Carter from TheDomeBros — saw you wanted to hear how the pool dome works. ` +
-          `Happy to answer any questions! When's a good time for a quick call, or want me to just ` +
-          `send the details?</blockquote>`
+        ? (smsConsent
+            ? `<p><strong>Phone-only lead — opted in to texts, OK to text them.</strong> (No auto-reply was sent.)</p>` +
+              `<p>Ready-to-send template (copy into Google Voice):</p>` +
+              `<blockquote style="border-left:3px solid #1f3b73;margin:0;padding:8px 14px;background:#f6f4ef;">` +
+              `Hi, this is Carter from TheDomeBros — saw you wanted to hear how the pool dome works. ` +
+              `Happy to answer any questions! When's a good time for a quick call, or want me to just ` +
+              `send the details?</blockquote>`
+            : `<p><strong>Phone-only lead — did NOT opt in to texts.</strong> Call them, or get verbal consent before texting. (No auto-reply was sent.)</p>`)
         : "";
       const unverifiedNote = unverified
         ? `<p style="background:#fde2e1;border:1px solid #f5b5b2;border-radius:8px;padding:10px 14px;color:#8a1c16;"><strong>&#9888; UNVERIFIED:</strong> This lead did not pass the Turnstile bot check, but was saved anyway. Treat it with extra caution.</p>`
@@ -293,7 +299,7 @@ export default {
       ctx.waitUntil(fetch(env.LEAD_LOG_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message }),
+        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message, sms_consent: smsConsent ? "yes" : "no" }),
       }).catch(() => {}));
     }
 
