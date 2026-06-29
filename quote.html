@@ -61,6 +61,10 @@
         <form id="quickForm" class="quickcap" style="margin-top:22px">
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
           <input type="text" name="contact" placeholder="Email or phone number" aria-label="Your email address or phone number" required />
+          <label class="smsconsent" style="display:flex;width:100%;gap:8px;align-items:flex-start;font-weight:400;margin:10px 0;text-align:left">
+            <input name="sms_consent" type="checkbox" value="yes" style="flex:0 0 auto;width:auto;margin:4px 0 0" />
+            <span class="note" style="flex:1 1 auto;min-width:0;margin:0;text-align:left">If you give a phone number, I agree to receive texts from TheDomeBros about my quote and service. Consent is not a condition of purchase. Msg frequency varies; msg &amp; data rates may apply. Reply HELP for help, STOP to opt out. See our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.</span>
+          </label>
           <div class="cf-turnstile" data-sitekey="0x4AAAAAADrG9JwlvW23GBfe"></div>
           <button class="btn" type="submit" id="quickButton">See how it works</button>
         </form>
@@ -96,9 +100,9 @@
           <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
           <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
 
-          <label class="smsconsent" style="display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:6px 0 10px;text-align:left">
-            <input id="sms_consent" name="sms_consent" type="checkbox" value="yes" style="margin-top:4px;flex:0 0 auto" />
-            <span class="note" style="margin:0;text-align:left">I agree to receive text messages from TheDomeBros about my quote, scheduling, and service at the phone number I provide. Consent is not a condition of purchase. Message frequency varies; message &amp; data rates may apply. Reply HELP for help, STOP to opt out. See our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.</span>
+          <label class="smsconsent" style="display:flex;width:100%;gap:8px;align-items:flex-start;font-weight:400;margin:10px 0;text-align:left">
+            <input name="sms_consent" type="checkbox" value="yes" style="flex:0 0 auto;width:auto;margin:4px 0 0" />
+            <span class="note" style="flex:1 1 auto;min-width:0;margin:0;text-align:left">I agree to receive text messages from TheDomeBros about my quote, scheduling, and service at the phone number I provide. Consent is not a condition of purchase. Message frequency varies; message &amp; data rates may apply. Reply HELP for help, STOP to opt out. See our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.</span>
           </label>
 
           <div class="cf-turnstile" data-sitekey="0x4AAAAAADrG9JwlvW23GBfe"></div>
