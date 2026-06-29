@@ -27,7 +27,7 @@
 // edit → New version" so the live /exec URL keeps working. If you add or
 // change scopes, Apps Script will prompt you to re-authorize.
 //
-// Columns: Date | Source | Name | Email | Phone | Pool size | Zip | Message | Status
+// Columns: Date | Source | Name | Email | Phone | Pool size | Zip | Message | Status | Texts OK?
 // "Status" starts as NEW — update it by hand as you work leads
 // (e.g. TEXTED, QUOTED, WON, LOST).
 
@@ -36,9 +36,11 @@ function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("Leads") || ss.insertSheet("Leads");
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["Date", "Source", "Name", "Email", "Phone", "Pool size", "Zip", "Message", "Status"]);
+    sheet.appendRow(["Date", "Source", "Name", "Email", "Phone", "Pool size", "Zip", "Message", "Status", "Texts OK?"]);
     sheet.setFrozenRows(1);
   }
+  // SMS consent: only meaningful when we have a phone number to text.
+  var textsOk = data.phone ? (data.sms_consent === "yes" ? "YES" : "NO") : "";
   sheet.appendRow([
     new Date(),
     data.source || "",
@@ -49,6 +51,7 @@ function doPost(e) {
     data.zip || "",
     data.message || "",
     "NEW",
+    textsOk,
   ]);
 
   // Mirror the lead into Google Contacts. Never let a Contacts failure break
@@ -100,6 +103,8 @@ function upsertContact(data) {
   if (data.pool_size) note.push("Pool size: " + data.pool_size);
   if (data.zip) note.push("Zip: " + data.zip);
   if (data.source) note.push("Source: " + data.source);
+  // Record SMS consent so it's visible on the contact (compliance evidence).
+  if (phone) note.push(data.sms_consent === "yes" ? "Texts: OPTED IN (form)" : "Texts: NOT opted in — get consent first");
   if (data.message) note.push("Message: " + data.message);
   note.push("Added from quote form on " + new Date().toDateString());
   resource.biographies = [{ value: note.join("\n"), contentType: "TEXT_PLAIN" }];
