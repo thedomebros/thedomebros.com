@@ -26,8 +26,8 @@ with a custom domain.
 - **DNS / edge:** registrar Porkbun, with DNS pointing **directly at GitHub
   Pages** (`thedomebros.com` resolves to GitHub's IPs `185.199.108–111.153`).
   Cloudflare does **not** proxy or cache the site — the Cloudflare account is
-  used only for the quote-form Worker (`*.workers.dev`) and Turnstile bot
-  protection. There is no Cloudflare cache to purge; GitHub Pages serves the
+  used only for the Workers (`*.workers.dev`: quote-form + phone IVR) and
+  Turnstile bot protection. There is no Cloudflare cache to purge; GitHub Pages serves the
   site through its own CDN, which auto-purges on each push.
 - **Analytics:** Google Analytics 4, measurement ID `G-E3Z0CTDFY2`, inlined in
   every page's `<head>`.
@@ -81,20 +81,56 @@ homepage has JSON-LD `LocalBusiness`; the FAQ has JSON-LD `FAQPage`. Keep
 
 The quote form (`quote.html`) POSTs to a **Cloudflare Worker** deployed at
 `https://quote-form.thedomebros-com.workers.dev`. The Worker source lives in
-the repo at `worker/quote-form-worker.js` (kept in sync manually — editing the
-file here does **not** redeploy; deploy is done in the Cloudflare dashboard).
+the repo at `worker/quote-form-worker.js` and is **the deploy source** — push
+changes with the `wrangler` CLI (see *Deploying Workers* below).
 
 What the Worker does: validates origin/attachments, emails the lead to the
 business inbox (with uploaded files attached), and sends an auto-reply to the
 submitter — all via the **Resend API**.
 
 Worker config is set in the Cloudflare dashboard, **never hardcoded** (so the
-repo can stay public):
+repo can stay public). `keep_vars = true` in the wrangler config preserves these
+across deploys:
 - Secret `RESEND_API_KEY`
 - Var `LEAD_TO` — inbox that receives quote requests
 - Var `MAIL_FROM` — verified Resend sender (e.g. `TheDomeBros <quotes@thedomebros.com>`)
 
 Limits enforced both client-side and in the Worker: **6 files / 20 MB total**.
+
+## Phone line (Twilio IVR)
+
+`worker/twilio-ivr-worker.js` is a second Worker (`twilio-ivr`) that powers the
+business phone line via **Twilio**: an inbound call gets a keypad menu (1 = new
+quote, 2 = existing/seasonal, 3 = leave a message), rings the team's cells, and
+emails a transcribed voicemail; inbound texts are emailed with an auto-reply.
+Same **Resend** setup as the quote Worker. Twilio's number webhooks point at
+`/voice` and `/sms` (HTTP POST). Config (dashboard vars/secrets): `SALES_CELLS`
+(comma-separated E.164), plus the shared `RESEND_API_KEY`, `LEAD_TO`, `MAIL_FROM`.
+
+## Deploying Workers (wrangler CLI)
+
+Workers are deployed with the **`wrangler` CLI** (`wrangler login` already done).
+Each Worker has a config in `worker/`:
+
+| Worker | Config | Source |
+| --- | --- | --- |
+| `quote-form` | `wrangler.quote.toml` | `quote-form-worker.js` |
+| `twilio-ivr` | `wrangler.ivr.toml` | `twilio-ivr-worker.js` |
+
+Deploy (updates the existing Worker of the same name):
+
+```
+cd website/worker
+npx wrangler deploy -c wrangler.quote.toml   # or wrangler.ivr.toml
+```
+
+Config (vars + secrets) lives in the **Cloudflare dashboard**, not the repo, so
+it stays public-safe; `keep_vars = true` in each config stops a deploy from
+clearing it. Set/rotate a secret from the CLI with:
+
+```
+npx wrangler secret put RESEND_API_KEY -c wrangler.ivr.toml
+```
 
 ## Email (Gmail "Send mail as")
 
@@ -134,5 +170,6 @@ via Resend SMTP:
 - No build/test/lint tooling — it's hand-edited static HTML/CSS/JS. "Done" means
   the page renders correctly; verify by opening the file or the live URL.
 - The `mockup*` files are dead prototypes; don't edit them for real changes.
-- The Worker file is a mirror of what's deployed — say so if you change it, since
-  it won't take effect until redeployed in Cloudflare.
+- The `worker/*.js` files are the deploy source — after editing one, redeploy it
+  with `npx wrangler deploy -c worker/wrangler.<name>.toml` (the change won't go
+  live until you do).

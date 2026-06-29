@@ -1,0 +1,8 @@
+# Deploy the phone IVR Worker:
+#   cd website/worker && npx wrangler deploy -c wrangler.ivr.toml
+# Vars/secrets (SALES_CELLS, RESEND_API_KEY, LEAD_TO, MAIL_FROM) stay in the
+# Cloudflare dashboard; keep_vars = true stops a deploy from wiping them.
+name = "twilio-ivr"
+main = "twilio-ivr-worker.js"
+compatibility_date = "2026-06-27"
+keep_vars = true
