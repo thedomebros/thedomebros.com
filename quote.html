@@ -96,6 +96,11 @@
           <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
           <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
 
+          <label class="smsconsent" style="display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:6px 0 10px;text-align:left">
+            <input id="sms_consent" name="sms_consent" type="checkbox" value="yes" style="margin-top:4px;flex:0 0 auto" />
+            <span class="note" style="margin:0;text-align:left">I agree to receive text messages from TheDomeBros about my quote, scheduling, and service at the phone number I provide. Consent is not a condition of purchase. Message frequency varies; message &amp; data rates may apply. Reply HELP for help, STOP to opt out. See our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.</span>
+          </label>
+
           <div class="cf-turnstile" data-sitekey="0x4AAAAAADrG9JwlvW23GBfe"></div>
           <button class="btn" id="submitButton" type="submit">Request my free quote</button>
           <div class="err" id="submitErrorMessage">Something went wrong &mdash; please email us directly at contact@thedomebros.com.</div>
