@@ -84,7 +84,14 @@
   var WORKER = "https://quote-form.thedomebros-com.workers.dev/confirm";
   var q = new URLSearchParams(location.search);
   var name = (q.get("n") || "").slice(0,120);
-  var when = (q.get("w") || "").slice(0,120);
+  function fromCompact(c){
+    if(!c || c.length < 8) return "";
+    var dt = new Date(+c.slice(0,4), +c.slice(4,6)-1, +c.slice(6,8));
+    var ds = dt.toLocaleDateString(undefined, {weekday:"long", month:"long", day:"numeric"});
+    if(c.length >= 12){ var h=+c.slice(8,10), mi=c.slice(10,12); var ap=h>=12?"PM":"AM"; return ds + " at " + (((h+11)%12)+1) + ":" + mi + " " + ap; }
+    return ds;
+  }
+  var when = q.get("d") ? fromCompact(q.get("d")) : (q.get("w") || "").slice(0,120);
   var type = (q.get("t") || "").slice(0,60);
   var NOUNS = { "Measuring":"measurement", "Install":"installation", "Service":"service appointment" };
   var noun = NOUNS[type] || "visit";

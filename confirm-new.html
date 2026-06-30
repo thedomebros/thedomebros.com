@@ -80,7 +80,8 @@
     var when = fmtWhen(document.getElementById("cdate").value, document.getElementById("ctime").value);
     if(!name || !when){ alert("Enter a name and pick a date (time optional)."); return; }
     var noun = NOUNS[type] || "appointment";
-    var link = SITE + "/confirm?n=" + encodeURIComponent(name) + "&w=" + encodeURIComponent(when) + "&t=" + encodeURIComponent(type);
+    var dc = document.getElementById("cdate").value.replace(/-/g,"") + (document.getElementById("ctime").value ? document.getElementById("ctime").value.replace(":","") : "");
+    var link = SITE + "/confirm?n=" + encodeURIComponent(name) + "&d=" + dc + "&t=" + encodeURIComponent(type);
     var msg = "Hi " + firstName(name) + ", this is TheDomeBros confirming your " + noun + " on " + when +
               ". Please confirm or reschedule here: " + link;
     document.getElementById("msg").textContent = msg;
