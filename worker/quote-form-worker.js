@@ -117,6 +117,49 @@ async function verifyTurnstile(secret, token, ip) {
   }
 }
 
+// Handle an appointment confirmation response and email it to the business.
+async function handleConfirm(request, env, origin) {
+  let d;
+  try { d = await request.json(); } catch { return json({ success: false, message: "Bad request" }, 400, origin); }
+  const name = (d.name || "").toString().trim().slice(0, 120);
+  const when = (d.when || "").toString().trim().slice(0, 120);
+  const type = (d.type || "").toString().trim().slice(0, 60);
+  const choice = (d.choice || "").toString().trim().toLowerCase();
+  const note = (d.note || "").toString().trim().slice(0, 1000);
+  const eventId = (d.eventId || "").toString().slice(0, 200);
+  const LABELS = { confirmed: "Confirmed", reschedule: "Reschedule requested", canceled: "Canceled" };
+  if (!LABELS[choice]) return json({ success: false, message: "Invalid choice" }, 400, origin);
+
+  // Reflect the response on the linked Google Calendar event (best-effort).
+  if (eventId && env.CALENDAR_URL && env.CALENDAR_SECRET) {
+    try {
+      await fetch(env.CALENDAR_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret: env.CALENDAR_SECRET, action: "update", eventId, choice, note }),
+      });
+    } catch (e) { /* don't fail the customer's response if calendar update fails */ }
+  }
+
+  const noteLabel = choice === "reschedule" ? "Preferred times" : "Note";
+  const html =
+    `<h2>Appointment ${escapeHtml(LABELS[choice])}</h2>` +
+    `<p><strong>Customer:</strong> ${escapeHtml(name || "(no name given)")}</p>` +
+    `<p><strong>Type:</strong> ${escapeHtml(type || "(unspecified)")}</p>` +
+    `<p><strong>When:</strong> ${escapeHtml(when || "(not specified)")}</p>` +
+    (note ? `<p><strong>${noteLabel}:</strong><br>${escapeHtml(note).replace(/\n/g, "<br>")}</p>` : "");
+  try {
+    await sendEmail(env.RESEND_API_KEY, {
+      from: env.MAIL_FROM,
+      to: [env.LEAD_TO],
+      subject: `${LABELS[choice]} — ${name || "a customer"}${type ? ` · ${type}` : ""}${when ? ` (${when})` : ""}`,
+      html,
+    });
+  } catch (err) {
+    return json({ success: false, message: "Could not send." }, 502, origin);
+  }
+  return json({ success: true }, 200, origin);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -129,6 +172,12 @@ export default {
     }
     if (!env.RESEND_API_KEY || !env.LEAD_TO || !env.MAIL_FROM) {
       return json({ success: false, message: "Server not configured" }, 500, origin);
+    }
+
+    // Appointment confirmation responses (from /confirm on the site) come in as
+    // JSON on the /confirm path; everything else is a quote-form submission.
+    if ((new URL(request.url).pathname.replace(/\/+$/, "") || "/") === "/confirm") {
+      return handleConfirm(request, env, origin);
     }
 
     let form;
@@ -300,6 +349,18 @@ export default {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message, sms_consent: smsConsent ? "yes" : "no" }),
+      }).catch(() => {}));
+    }
+
+    // Optional: push the lead into the team messaging app so it appears as a
+    // contact in the shared inbox with the right consent state. No-op until
+    // MESSAGING_INGEST_URL + MESSAGING_INGEST_SECRET are set (i.e. after the
+    // messaging app is deployed). Never blocks the submission.
+    if (env.MESSAGING_INGEST_URL && env.MESSAGING_INGEST_SECRET && phone) {
+      ctx.waitUntil(fetch(env.MESSAGING_INGEST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET },
+        body: JSON.stringify({ phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }),
       }).catch(() => {}));
     }
 

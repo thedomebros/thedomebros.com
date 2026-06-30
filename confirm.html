@@ -93,6 +93,7 @@
   }
   var when = q.get("d") ? fromCompact(q.get("d")) : (q.get("w") || "").slice(0,120);
   var type = (q.get("t") || "").slice(0,60);
+  var eventId = (q.get("e") || "").slice(0,200);
   var NOUNS = { "Measuring":"measurement", "Install":"installation", "Service":"service appointment" };
   var noun = NOUNS[type] || "visit";
   if (type) document.getElementById("typePill").textContent = noun.charAt(0).toUpperCase()+noun.slice(1);
@@ -110,7 +111,7 @@
     try{
       var res = await fetch(WORKER, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ name: name, when: when, type: type, choice: choice, note: note || "" })
+        body: JSON.stringify({ name: name, when: when, type: type, choice: choice, note: note || "", eventId: eventId })
       });
       var out = await res.json();
       if(!res.ok || !out.success) throw new Error();
