@@ -29,7 +29,8 @@ function doPost(e) {
   var data = JSON.parse(e.postData.contents);
 
   try {
-    upsertContact(data);
+    if (data.source === "messaging") upsertFromMessaging(data);
+    else upsertContact(data);
   } catch (err) {
     console.error("Contact sync failed: " + err);
   }
@@ -182,4 +183,46 @@ function findExistingContact(email, phone) {
     if (res && res.results && res.results.length > 0) return true;
   }
   return false;
+}
+
+// Return the first matching person resource (with etag + fields) for an
+// email/phone, or null. Used to update an existing contact in place.
+function findContactResource(email, phone) {
+  var queries = [];
+  if (email) queries.push(email);
+  if (phone) queries.push(phone);
+  for (var i = 0; i < queries.length; i++) {
+    var res = People.People.searchContacts({
+      query: queries[i],
+      readMask: "names,emailAddresses,phoneNumbers",
+    });
+    if (res && res.results && res.results.length > 0) return res.results[0].person;
+  }
+  return null;
+}
+
+// Save a contact initiated from the messaging app: create a Google Contact (or
+// add a name/email to an existing one). Unlike upsertContact, these are people
+// you're actively texting — customers, not raw leads — so no "Quote Lead" label.
+function upsertFromMessaging(data) {
+  var name = (data.name || "").trim();
+  var email = (data.email || "").trim();
+  var phone = (data.phone || "").trim();
+  if (!phone && !email) return;
+
+  var p = findContactResource(email, phone);
+  if (p) {
+    var upd = { etag: p.etag };
+    var fields = [];
+    if (name) { upd.names = [{ givenName: name }]; fields.push("names"); }
+    if (email && !(p.emailAddresses && p.emailAddresses.length)) { upd.emailAddresses = [{ value: email }]; fields.push("emailAddresses"); }
+    if (fields.length) People.People.updateContact(upd, p.resourceName, { updatePersonFields: fields.join(",") });
+    return;
+  }
+
+  var resource = { names: [{ givenName: name || phone }] };
+  if (email) resource.emailAddresses = [{ value: email }];
+  if (phone) resource.phoneNumbers = [{ value: phone }];
+  resource.biographies = [{ value: "Added from TheDomeBros messaging on " + new Date().toDateString(), contentType: "TEXT_PLAIN" }];
+  People.People.createContact(resource);
 }
