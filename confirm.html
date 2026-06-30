@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{--cream:#f6f4ef;--card:#fffdf8;--ink:#1f2a37;--mut:#5b6675;--navy:#1f3b73;--navy-d:#162a52;--navy2:#3a5fa8;--line:#e4ddcf;--err:#b3261e}
-  *{box-sizing:border-box}html,body{margin:0}
+  *{box-sizing:border-box}html,body{margin:0;overflow-x:hidden}
   body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:24px 18px calc(24px + env(safe-area-inset-bottom,0))}
   h1,h2,h3,.brand,.btn{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em}
   .brand{font-weight:800;font-size:22px;color:var(--navy);text-decoration:none;margin:8px 0 22px;display:inline-block}
@@ -29,7 +29,7 @@
   textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:15px;background:#fff;color:var(--ink);resize:vertical;min-height:84px;margin-bottom:11px}
   .prow{display:flex;flex-direction:column;gap:12px;margin-bottom:11px}
   .pl{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px}
-  .prow input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+  .prow input{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
   .sub{display:none}.sub.open{display:block}
   .done{display:none;text-align:center}.done.open{display:block}
   .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
