@@ -210,6 +210,7 @@ function upsertFromMessaging(data) {
   var phone = (data.phone || "").trim();
   if (!phone && !email) return;
 
+  var resourceName;
   var p = findContactResource(email, phone);
   if (p) {
     var upd = { etag: p.etag };
@@ -217,12 +218,17 @@ function upsertFromMessaging(data) {
     if (name) { upd.names = [{ givenName: name }]; fields.push("names"); }
     if (email && !(p.emailAddresses && p.emailAddresses.length)) { upd.emailAddresses = [{ value: email }]; fields.push("emailAddresses"); }
     if (fields.length) People.People.updateContact(upd, p.resourceName, { updatePersonFields: fields.join(",") });
-    return;
+    resourceName = p.resourceName;
+  } else {
+    var resource = { names: [{ givenName: name || phone }] };
+    if (email) resource.emailAddresses = [{ value: email }];
+    if (phone) resource.phoneNumbers = [{ value: phone }];
+    resource.biographies = [{ value: "Added from TheDomeBros messaging on " + new Date().toDateString(), contentType: "TEXT_PLAIN" }];
+    resourceName = People.People.createContact(resource).resourceName;
   }
 
-  var resource = { names: [{ givenName: name || phone }] };
-  if (email) resource.emailAddresses = [{ value: email }];
-  if (phone) resource.phoneNumbers = [{ value: phone }];
-  resource.biographies = [{ value: "Added from TheDomeBros messaging on " + new Date().toDateString(), contentType: "TEXT_PLAIN" }];
-  People.People.createContact(resource);
+  // Optionally tag as a quote lead (same label the lead pipeline uses).
+  if (data.quote_lead && resourceName) {
+    People.ContactGroups.Members.modify({ resourceNamesToAdd: [resourceName] }, getQuoteLeadLabel());
+  }
 }
