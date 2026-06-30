@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Confirm your measurement | TheDomeBros</title>
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-domebros.png" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--cream:#f6f4ef;--card:#fffdf8;--ink:#1f2a37;--mut:#5b6675;--navy:#1f3b73;--navy-d:#162a52;--navy2:#3a5fa8;--line:#e4ddcf;--err:#b3261e}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:24px 18px calc(24px + env(safe-area-inset-bottom,0))}
+  h1,h2,h3,.brand,.btn{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em}
+  .brand{font-weight:800;font-size:22px;color:var(--navy);text-decoration:none;margin:8px 0 22px;display:inline-block}
+  .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 26px;box-shadow:0 4px 20px rgba(31,42,55,.06)}
+  .pill{display:inline-block;background:#e7ecf7;border:1px solid #d4ddf0;color:var(--navy);font-weight:700;font-size:12px;padding:5px 13px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:22px;margin:0 0 4px}
+  .appt{margin:14px 0 4px;padding:14px 16px;background:#eef1f7;border:1px solid var(--line);border-radius:14px}
+  .appt .who{font-weight:700;font-size:17px;font-family:'Plus Jakarta Sans',sans-serif}
+  .appt .when{color:var(--navy2);font-weight:600;font-size:15px;margin-top:2px}
+  .ask{color:var(--mut);font-size:14px;margin:16px 0 14px}
+  .btn{display:block;width:100%;text-align:center;border:0;border-radius:999px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:11px;transition:.15s}
+  .btn.confirm{background:var(--navy);color:#fff}.btn.confirm:hover{background:var(--navy-d)}
+  .btn.alt{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}.btn.alt:hover{background:#eef1f7}
+  .btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);font-weight:600}
+  textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:15px;background:#fff;color:var(--ink);resize:vertical;min-height:84px;margin-bottom:11px}
+  .sub{display:none}.sub.open{display:block}
+  .done{display:none;text-align:center}.done.open{display:block}
+  .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
+  .done h2{font-size:22px;margin:0 0 6px}.done p{color:var(--mut);margin:0}
+  .err{display:none;color:var(--err);font-size:14px;text-align:center;margin-top:8px}
+  .foot{color:var(--mut);font-size:12px;margin-top:18px;text-align:center}
+  .foot a{color:var(--navy2)}
+</style>
+</head>
+<body>
+  <a class="brand" href="https://thedomebros.com">TheDomeBros</a>
+  <div class="card">
+    <div id="form">
+      <span class="pill">Your appointment</span>
+      <h1>Let's confirm your visit</h1>
+      <div class="appt">
+        <div class="who" id="who">your measurement</div>
+        <div class="when" id="when"></div>
+      </div>
+      <p class="ask">Tap one below and we'll take it from here:</p>
+
+      <button class="btn confirm" id="btnConfirm">&#10003;&nbsp; Confirm this time</button>
+
+      <button class="btn alt" id="btnResched">Request a different time</button>
+      <div class="sub" id="reschedBox">
+        <textarea id="reschedNote" placeholder="What days/times work better for you?"></textarea>
+        <button class="btn confirm" id="btnReschedSend">Send reschedule request</button>
+      </div>
+
+      <button class="btn ghost" id="btnCancel">Cancel appointment</button>
+      <div class="sub" id="cancelBox">
+        <textarea id="cancelNote" placeholder="Anything we should know? (optional)"></textarea>
+        <button class="btn confirm" id="btnCancelSend">Confirm cancellation</button>
+      </div>
+
+      <div class="err" id="err">Something went wrong &mdash; please text us back instead.</div>
+    </div>
+
+    <div class="done" id="done">
+      <div class="ic" id="doneIc">&#10003;</div>
+      <h2 id="doneTitle">Thanks!</h2>
+      <p id="doneMsg"></p>
+    </div>
+  </div>
+  <p class="foot">TheDomeBros &middot; Utah County &middot; <a href="tel:+13852044760">(385) 204-4760</a></p>
+
+<script>
+  var WORKER = "https://quote-form.thedomebros-com.workers.dev/confirm";
+  var q = new URLSearchParams(location.search);
+  var name = (q.get("n") || "").slice(0,120);
+  var when = (q.get("w") || "").slice(0,120);
+  if (name) document.getElementById("who").textContent = name;
+  document.getElementById("when").textContent = when || "";
+
+  function show(id){ document.getElementById(id).classList.add("open"); }
+  function hide(id){ document.getElementById(id).classList.remove("open"); }
+  document.getElementById("btnResched").onclick = function(){ hide("cancelBox"); show("reschedBox"); document.getElementById("reschedNote").focus(); };
+  document.getElementById("btnCancel").onclick = function(){ hide("reschedBox"); show("cancelBox"); };
+
+  async function send(choice, note, okTitle, okMsg, icon){
+    document.getElementById("err").style.display="none";
+    try{
+      var res = await fetch(WORKER, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ name: name, when: when, choice: choice, note: note || "" })
+      });
+      var out = await res.json();
+      if(!res.ok || !out.success) throw new Error();
+      document.getElementById("doneIc").innerHTML = icon;
+      document.getElementById("doneTitle").textContent = okTitle;
+      document.getElementById("doneMsg").textContent = okMsg;
+      document.getElementById("form").style.display="none";
+      show("done");
+    }catch(e){ document.getElementById("err").style.display="block"; }
+  }
+  document.getElementById("btnConfirm").onclick = function(){
+    send("confirmed","", "You're confirmed!", "We'll see you "+(when||"then")+". We'll be in touch if anything changes.", "&#10003;");
+  };
+  document.getElementById("btnReschedSend").onclick = function(){
+    send("reschedule", document.getElementById("reschedNote").value, "Got it", "We received your reschedule request and will text you to find a new time.", "&#8635;");
+  };
+  document.getElementById("btnCancelSend").onclick = function(){
+    send("canceled", document.getElementById("cancelNote").value, "Cancelled", "Your appointment has been cancelled. Reach out any time if you'd like to rebook.", "&times;");
+  };
+</script>
+</body>
+</html>
