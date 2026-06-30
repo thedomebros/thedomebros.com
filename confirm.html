@@ -86,7 +86,7 @@
   var name = (q.get("n") || "").slice(0,120);
   var when = (q.get("w") || "").slice(0,120);
   var type = (q.get("t") || "").slice(0,60);
-  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Take down":"dome take-down", "Put up":"dome put-up" };
+  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Service":"service appointment" };
   var noun = NOUNS[type] || "visit";
   if (type) document.getElementById("typePill").textContent = noun.charAt(0).toUpperCase()+noun.slice(1);
   document.getElementById("head").textContent = "Let's confirm your " + noun;

@@ -44,8 +44,7 @@
     <select id="ctype">
       <option value="Measuring">Measuring</option>
       <option value="Install">Install</option>
-      <option value="Take down">Take down</option>
-      <option value="Put up">Put up</option>
+      <option value="Service">Service appointment</option>
     </select>
 
     <div class="row">
@@ -65,7 +64,7 @@
 </div>
 <script>
   var SITE = location.origin; // https://thedomebros.com
-  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Take down":"dome take-down", "Put up":"dome put-up" };
+  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Service":"service appointment" };
   function firstName(n){ return (n||"").trim().split(/\s+/)[0] || "there"; }
   function fmtWhen(d, t){
     if(!d) return "";
