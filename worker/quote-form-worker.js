@@ -140,6 +140,16 @@ async function handleConfirm(request, env, origin) {
     } catch (e) { /* don't fail the customer's response if calendar update fails */ }
   }
 
+  // Reflect the status in the messaging app's appointment banner (best-effort).
+  if (eventId && env.MESSAGING_INGEST_URL && env.MESSAGING_INGEST_SECRET) {
+    try {
+      await fetch(env.MESSAGING_INGEST_URL.replace("/api/ingest", "/api/appt/status"), {
+        method: "POST", headers: { "Content-Type": "application/json", "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET },
+        body: JSON.stringify({ code: eventId, choice, note }),
+      });
+    } catch (e) { /* best-effort */ }
+  }
+
   const noteLabel = choice === "reschedule" ? "Preferred times" : "Note";
   const html =
     `<h2>Appointment ${escapeHtml(LABELS[choice])}</h2>` +
