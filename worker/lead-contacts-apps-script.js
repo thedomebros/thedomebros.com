@@ -1,5 +1,8 @@
 // TheDomeBros lead → Google Contacts sync — standalone Google Apps Script web app.
 //
+// Apps Script project 1cWFW6-MkZXc_fA75nnHzxhgd4Bg-XzMEFRYgc0TR719j0BtjcvAKI8kH
+// To edit/deploy: clasp clone-script 1cWFW6-MkZXc_fA75nnHzxhgd4Bg-XzMEFRYgc0TR719j0BtjcvAKI8kH
+//
 // Mirrors every quote-form / quick-capture lead into Google Contacts — tagged
 // with a "Quote Lead" label so prospects are easy to tell apart from real
 // customers, and so an incoming call/text to the business line shows a
