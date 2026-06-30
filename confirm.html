@@ -56,8 +56,8 @@
       <button class="btn alt" id="btnResched">Request a different time</button>
       <div class="sub" id="reschedBox">
         <div class="prow">
-          <div><label class="pl">Preferred date</label><input id="rDate" type="text" placeholder="Tap to choose a date" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" /></div>
-          <div><label class="pl">Preferred time</label><input id="rTime" type="text" placeholder="Tap to choose a time" onfocus="this.type='time'" onblur="if(!this.value)this.type='text'" /></div>
+          <div><label class="pl">Preferred date</label><input id="rDate" type="text" placeholder="Tap to choose a date" /></div>
+          <div><label class="pl">Preferred time</label><input id="rTime" type="text" placeholder="Tap to choose a time" /></div>
         </div>
         <textarea id="reschedNote" placeholder="Anything else? (optional)"></textarea>
         <button class="btn confirm" id="btnReschedSend">Send reschedule request</button>
@@ -125,8 +125,21 @@
     var tp = t.split(":"); var h = +tp[0]; var ap = h>=12 ? "PM" : "AM"; var h12 = ((h+11)%12)+1;
     return ds + " at " + h12 + ":" + tp[1] + " " + ap;
   }
+  // Field stays a full-width text box; tapping opens the native picker, then it
+  // shows a friendly label and stashes the ISO value (so it never overflows).
+  function pickerLabel(iso, kind){
+    if(kind==="date"){ var p=iso.split("-"); return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
+    var tp=iso.split(":"); var h=+tp[0]; var ap=h>=12?"PM":"AM"; return ((h+11)%12+1)+":"+tp[1]+" "+ap;
+  }
+  function setupPicker(id, kind){
+    var el=document.getElementById(id);
+    el.addEventListener("focus", function(){ if(el.type==="text"){ el.type=kind; el.value=el.dataset.iso||""; } });
+    el.addEventListener("change", function(){ el.dataset.iso=el.value; });
+    el.addEventListener("blur", function(){ el.type="text"; el.value = el.dataset.iso ? pickerLabel(el.dataset.iso, kind) : ""; });
+  }
+  setupPicker("rDate","date"); setupPicker("rTime","time");
   document.getElementById("btnReschedSend").onclick = function(){
-    var pref = fmtPref(document.getElementById("rDate").value, document.getElementById("rTime").value);
+    var pref = fmtPref(document.getElementById("rDate").dataset.iso || "", document.getElementById("rTime").dataset.iso || "");
     var extra = document.getElementById("reschedNote").value.trim();
     if(!pref && !extra){ alert("Pick a preferred date/time (or add a note)."); return; }
     var note = (pref ? "Prefers " + pref : "") + (extra ? ((pref?" — ":"") + extra) : "");
