@@ -29,7 +29,7 @@
   textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:15px;background:#fff;color:var(--ink);resize:vertical;min-height:84px;margin-bottom:11px}
   .prow{display:flex;flex-direction:column;gap:12px;margin-bottom:11px}
   .pl{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px}
-  .prow input{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+  .prow input{display:block;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
   .sub{display:none}.sub.open{display:block}
   .done{display:none;text-align:center}.done.open{display:block}
   .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
@@ -56,8 +56,8 @@
       <button class="btn alt" id="btnResched">Request a different time</button>
       <div class="sub" id="reschedBox">
         <div class="prow">
-          <div><label class="pl">Preferred date</label><input id="rDate" type="date" /></div>
-          <div><label class="pl">Preferred time</label><input id="rTime" type="time" step="900" /></div>
+          <div><label class="pl">Preferred date</label><input id="rDate" type="text" placeholder="Tap to choose a date" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" /></div>
+          <div><label class="pl">Preferred time</label><input id="rTime" type="text" placeholder="Tap to choose a time" onfocus="this.type='time'" onblur="if(!this.value)this.type='text'" /></div>
         </div>
         <textarea id="reschedNote" placeholder="Anything else? (optional)"></textarea>
         <button class="btn confirm" id="btnReschedSend">Send reschedule request</button>
