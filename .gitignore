@@ -2,3 +2,6 @@
 **/.DS_Store
 worker/.wrangler/
 worker/node_modules/
+# clasp working copies — code is preserved as worker/lead-*-apps-script.js
+worker/lead-contacts-clasp/
+worker/lead-log-clasp/
