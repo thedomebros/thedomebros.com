@@ -27,6 +27,9 @@
   .btn.alt{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}.btn.alt:hover{background:#eef1f7}
   .btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);font-weight:600}
   textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:15px;background:#fff;color:var(--ink);resize:vertical;min-height:84px;margin-bottom:11px}
+  .prow{display:flex;gap:10px;margin-bottom:11px}.prow>div{flex:1}
+  .pl{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px}
+  .prow input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
   .sub{display:none}.sub.open{display:block}
   .done{display:none;text-align:center}.done.open{display:block}
   .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
@@ -52,7 +55,11 @@
 
       <button class="btn alt" id="btnResched">Request a different time</button>
       <div class="sub" id="reschedBox">
-        <textarea id="reschedNote" placeholder="What days/times work better for you?"></textarea>
+        <div class="prow">
+          <div><label class="pl">Preferred date</label><input id="rDate" type="date" /></div>
+          <div><label class="pl">Preferred time</label><input id="rTime" type="time" step="900" /></div>
+        </div>
+        <textarea id="reschedNote" placeholder="Anything else? (optional)"></textarea>
         <button class="btn confirm" id="btnReschedSend">Send reschedule request</button>
       </div>
 
@@ -110,8 +117,20 @@
   document.getElementById("btnConfirm").onclick = function(){
     send("confirmed","", "You're confirmed!", "We'll see you "+(when||"then")+". We'll be in touch if anything changes.", "&#10003;");
   };
+  function fmtPref(d, t){
+    if(!d) return "";
+    var p = d.split("-"); var dt = new Date(+p[0], +p[1]-1, +p[2]);
+    var ds = dt.toLocaleDateString(undefined, {weekday:"long", month:"long", day:"numeric"});
+    if(!t) return ds;
+    var tp = t.split(":"); var h = +tp[0]; var ap = h>=12 ? "PM" : "AM"; var h12 = ((h+11)%12)+1;
+    return ds + " at " + h12 + ":" + tp[1] + " " + ap;
+  }
   document.getElementById("btnReschedSend").onclick = function(){
-    send("reschedule", document.getElementById("reschedNote").value, "Got it", "We received your reschedule request and will text you to find a new time.", "&#8635;");
+    var pref = fmtPref(document.getElementById("rDate").value, document.getElementById("rTime").value);
+    var extra = document.getElementById("reschedNote").value.trim();
+    if(!pref && !extra){ alert("Pick a preferred date/time (or add a note)."); return; }
+    var note = (pref ? "Prefers " + pref : "") + (extra ? ((pref?" — ":"") + extra) : "");
+    send("reschedule", note, "Got it", "We got your preferred time — we'll text you to lock it in.", "&#8635;");
   };
   document.getElementById("btnCancelSend").onclick = function(){
     send("canceled", document.getElementById("cancelNote").value, "Cancelled", "Your appointment has been cancelled. Reach out any time if you'd like to rebook.", "&times;");
