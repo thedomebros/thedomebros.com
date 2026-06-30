@@ -40,8 +40,8 @@
   <a class="brand" href="https://thedomebros.com">TheDomeBros</a>
   <div class="card">
     <div id="form">
-      <span class="pill">Your appointment</span>
-      <h1>Let's confirm your visit</h1>
+      <span class="pill" id="typePill">Your appointment</span>
+      <h1 id="head">Let's confirm your visit</h1>
       <div class="appt">
         <div class="who" id="who">your measurement</div>
         <div class="when" id="when"></div>
@@ -78,6 +78,11 @@
   var q = new URLSearchParams(location.search);
   var name = (q.get("n") || "").slice(0,120);
   var when = (q.get("w") || "").slice(0,120);
+  var type = (q.get("t") || "").slice(0,60);
+  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Take down":"dome take-down", "Put up":"dome put-up" };
+  var noun = NOUNS[type] || "visit";
+  if (type) document.getElementById("typePill").textContent = noun.charAt(0).toUpperCase()+noun.slice(1);
+  document.getElementById("head").textContent = "Let's confirm your " + noun;
   if (name) document.getElementById("who").textContent = name;
   document.getElementById("when").textContent = when || "";
 
@@ -91,7 +96,7 @@
     try{
       var res = await fetch(WORKER, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ name: name, when: when, choice: choice, note: note || "" })
+        body: JSON.stringify({ name: name, when: when, type: type, choice: choice, note: note || "" })
       });
       var out = await res.json();
       if(!res.ok || !out.success) throw new Error();

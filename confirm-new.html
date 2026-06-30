@@ -19,7 +19,8 @@
   .note{color:var(--mut);font-size:14px;margin:0 0 18px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
   label{display:block;font-weight:700;font-size:13px;margin:12px 0 5px}
-  input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  input,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  .row{display:flex;gap:12px}.row>div{flex:1}
   .btn{display:block;width:100%;text-align:center;border:0;border-radius:999px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px;background:var(--navy);color:#fff}
   .btn:hover{background:var(--navy-d)}
   .out{display:none;margin-top:18px}.out.open{display:block}
@@ -38,8 +39,20 @@
   <div class="card">
     <label for="cname">Customer name</label>
     <input id="cname" type="text" placeholder="Mike Thompson" autocomplete="off" />
-    <label for="cwhen">Appointment (date &amp; time)</label>
-    <input id="cwhen" type="text" placeholder="Sat Jun 29, 9:00 AM" autocomplete="off" />
+
+    <label for="ctype">Appointment type</label>
+    <select id="ctype">
+      <option value="Measuring">Measuring</option>
+      <option value="Install">Install</option>
+      <option value="Take down">Take down</option>
+      <option value="Put up">Put up</option>
+    </select>
+
+    <div class="row">
+      <div><label for="cdate">Date</label><input id="cdate" type="date" /></div>
+      <div><label for="ctime">Time</label><input id="ctime" type="time" step="900" /></div>
+    </div>
+
     <button class="btn" id="gen">Generate text message</button>
 
     <div class="out" id="out">
@@ -52,13 +65,24 @@
 </div>
 <script>
   var SITE = location.origin; // https://thedomebros.com
+  var NOUNS = { "Measuring":"measurement", "Install":"installation", "Take down":"dome take-down", "Put up":"dome put-up" };
   function firstName(n){ return (n||"").trim().split(/\s+/)[0] || "there"; }
+  function fmtWhen(d, t){
+    if(!d) return "";
+    var p = d.split("-"); var dt = new Date(+p[0], +p[1]-1, +p[2]);
+    var ds = dt.toLocaleDateString(undefined, {weekday:"long", month:"long", day:"numeric"});
+    if(!t) return ds;
+    var tp = t.split(":"); var h = +tp[0]; var ap = h>=12 ? "PM" : "AM"; var h12 = ((h+11)%12)+1;
+    return ds + " at " + h12 + ":" + tp[1] + " " + ap;
+  }
   document.getElementById("gen").onclick = function(){
     var name = document.getElementById("cname").value.trim();
-    var when = document.getElementById("cwhen").value.trim();
-    if(!name || !when){ alert("Enter both a name and an appointment time."); return; }
-    var link = SITE + "/confirm?n=" + encodeURIComponent(name) + "&w=" + encodeURIComponent(when);
-    var msg = "Hi " + firstName(name) + ", this is TheDomeBros confirming your free measurement on " + when +
+    var type = document.getElementById("ctype").value;
+    var when = fmtWhen(document.getElementById("cdate").value, document.getElementById("ctime").value);
+    if(!name || !when){ alert("Enter a name and pick a date (time optional)."); return; }
+    var noun = NOUNS[type] || "appointment";
+    var link = SITE + "/confirm?n=" + encodeURIComponent(name) + "&w=" + encodeURIComponent(when) + "&t=" + encodeURIComponent(type);
+    var msg = "Hi " + firstName(name) + ", this is TheDomeBros confirming your " + noun + " on " + when +
               ". Please confirm or reschedule here: " + link;
     document.getElementById("msg").textContent = msg;
     document.getElementById("preview").href = link;
