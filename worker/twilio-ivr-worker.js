@@ -122,6 +122,15 @@ export default {
         const conf = `lead-${callerSid}`;
         const q = `conf=${encodeURIComponent(conf)}&caller=${encodeURIComponent(caller)}`;
 
+        // Tell the messaging app about the incoming call (push with name + call log).
+        if (env.VM_SECRET) {
+          ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/call-event", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
+            body: JSON.stringify({ from: caller, event: "incoming" }),
+          }).catch(() => {}));
+        }
+
         ctx.waitUntil((async () => {
           const agentSids = [];
           for (const cell of cells) {
@@ -278,6 +287,15 @@ export default {
             `<p><strong>From:</strong> ${escapeHtml(from)}</p>` +
             `<p><strong>Transcript:</strong><br>${escapeHtml(transcript).replace(/\n/g, "<br>")}</p>` +
             (recordingUrl ? `<p><a href="${escapeHtml(recordingUrl)}.mp3">Listen to the recording</a></p>` : ""),
+        }).catch(() => {}));
+      }
+      // Also drop the voicemail into the messaging app (shows in the caller's
+      // thread + the Voicemail page). Best-effort; the email above is the backup.
+      if (env.VM_SECRET) {
+        ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/voicemail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
+          body: JSON.stringify({ from, transcript, recording_url: recordingUrl }),
         }).catch(() => {}));
       }
       return new Response("ok"); // Twilio ignores the body of a transcribe callback.
