@@ -16,12 +16,14 @@
 //   Voice     → "A call comes in"    → Webhook → https://<worker-url>/voice
 //   Messaging → "A message comes in" → Webhook → https://<worker-url>/sms
 //
-// Worker config (set in the Cloudflare dashboard, NEVER hardcoded):
-//   Var    SALES_CELLS    : comma-separated E.164 cells to ring (rings all at once),
-//                           e.g. "+13852044760,+1801XXXXXXX"
-//   Secret RESEND_API_KEY : Resend API key (the same one the quote Worker uses)
-//   Var    MAIL_FROM      : verified sender, e.g. "TheDomeBros <quotes@thedomebros.com>"
-//   Var    LEAD_TO        : inbox that receives voicemails and inbound texts
+// Worker config (set in the Cloudflare dashboard / via wrangler secret, NEVER hardcoded):
+//   Var/Secret SALES_CELLS        : comma-separated E.164 cells to ring (all at once)
+//   Secret     RESEND_API_KEY     : Resend API key (the same one the quote Worker uses)
+//   Var        MAIL_FROM          : verified sender, e.g. "TheDomeBros <quotes@thedomebros.com>"
+//   Var        LEAD_TO            : inbox that receives voicemails and inbound texts
+//   Secret     TWILIO_ACCOUNT_SID : used to fan out the call-routing conference legs
+//   Secret     TWILIO_AUTH_TOKEN  : "
+//   KV         CALL_STATE         : per-call ring state (bound in wrangler.ivr.toml)
 //
 // TODO before going live: validate the X-Twilio-Signature header so only Twilio
 // can hit these routes. Not yet implemented.
@@ -52,6 +54,27 @@ async function sendEmail(apiKey, payload) {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
 
+// ---- Twilio REST API (drives the call-routing conference fan-out) ----
+function twilioAuth(env) {
+  return "Basic " + btoa(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`);
+}
+async function twilioCreateCall(env, params) {
+  const res = await fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Calls.json`,
+    { method: "POST", headers: { Authorization: twilioAuth(env), "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(params) }
+  );
+  if (!res.ok) throw new Error(`Twilio create call ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+// Redirect a live call (Url) or end it (Status). Best-effort — a leg that already
+// ended returns an error we can safely ignore.
+function twilioUpdateCall(env, callSid, params) {
+  return fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Calls/${callSid}.json`,
+    { method: "POST", headers: { Authorization: twilioAuth(env), "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(params) }
+  );
+}
+
 export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
@@ -74,7 +97,8 @@ export default {
 
     // Route the keypress.
     if (path === "/voice/route") {
-      const digit = ((await request.formData()).get("Digits") || "").toString();
+      const form = await request.formData();
+      const digit = (form.get("Digits") || "").toString();
 
       if (digit === "1" || digit === "2") {
         const cells = (env.SALES_CELLS || "")
@@ -85,12 +109,51 @@ export default {
             `<Redirect method="POST">/voice/voicemail</Redirect>`
           );
         }
-        // The whisper URL on <Number> must be absolute (relative breaks the dial).
-        const numbers = cells.map((n) => `<Number url="${origin}/voice/whisper">${n}</Number>`).join("");
-        // After the dial, /voice/after-dial decides: hang up vs. voicemail.
+
+        // Conference "dial-out" fan-out. We deliberately DON'T use <Dial><Number>:
+        // there, the first cell to answer cancels the others, so one person
+        // declining the whisper kills the call for everyone. Instead the caller
+        // waits in a conference while we ring each cell as its own outbound call;
+        // whoever presses a key joins the conference, and a decline / no-answer
+        // only drops that one leg. See /voice/agent-whisper, -accept, -status.
+        const callerSid = (form.get("CallSid") || "").toString();
+        const bizNum = (form.get("To") || form.get("Called") || "").toString();
+        const caller = (form.get("From") || "").toString();
+        const conf = `lead-${callerSid}`;
+        const q = `conf=${encodeURIComponent(conf)}&caller=${encodeURIComponent(caller)}`;
+
+        ctx.waitUntil((async () => {
+          const agentSids = [];
+          for (const cell of cells) {
+            try {
+              const call = await twilioCreateCall(env, {
+                To: cell,
+                From: bizNum,
+                Url: `${origin}/voice/agent-whisper?${q}`,
+                Method: "POST",
+                Timeout: "20",
+                StatusCallback: `${origin}/voice/agent-status?conf=${encodeURIComponent(conf)}`,
+                StatusCallbackEvent: "completed",
+                StatusCallbackMethod: "POST",
+              });
+              if (call && call.sid) agentSids.push(call.sid);
+            } catch (e) { /* one cell failing shouldn't stop the others */ }
+          }
+          await env.CALL_STATE.put(`conf:${conf}`, JSON.stringify({
+            callerSid, agentSids, pending: agentSids.length, joined: false,
+          }), { expirationTtl: 600 });
+          // Nothing could be dialed → don't strand the caller on hold.
+          if (agentSids.length === 0 && callerSid) {
+            await twilioUpdateCall(env, callerSid, { Url: `${origin}/voice/no-answer`, Method: "POST" }).catch(() => {});
+          }
+        })());
+
+        // Park the caller in the conference; an accepting agent starts it. The
+        // waitUrl plays a ringback tone so the caller hears ringing (not silence)
+        // until someone picks up.
         return twiml(
-          say("Connecting you now. One moment.") +
-          `<Dial timeout="20" action="/voice/after-dial" method="POST">${numbers}</Dial>`
+          `<Dial><Conference startConferenceOnEnter="false" endConferenceOnExit="true" ` +
+          `beep="false" waitUrl="${origin}/voice/hold">${conf}</Conference></Dial>`
         );
       }
 
@@ -98,30 +161,88 @@ export default {
       return twiml(`<Redirect method="POST">/voice/voicemail</Redirect>`);
     }
 
-    // Whisper / screen: the team member must press a key to accept. If a personal
-    // cell voicemail answers instead, it won't press a key, the leg hangs up, and
-    // the caller is NEVER bridged to that personal greeting.
-    if (path === "/voice/whisper") {
+    // Ringback the caller hears while we ring the team — a real US ring cadence
+    // that stops the instant someone accepts (the conference starts and bridges
+    // them in). loop="0" repeats the tone forever until then.
+    if (path === "/voice/hold") {
+      return twiml(`<Play loop="0">${origin}/voice/ringback.wav</Play>`);
+    }
+
+    // Ringback tone audio (8 kHz mono WAV in KV) that the waitUrl above plays.
+    if (path === "/voice/ringback.wav") {
+      const buf = await env.CALL_STATE.get("asset:ringback", "arrayBuffer");
+      if (!buf) return new Response("not found", { status: 404 });
+      return new Response(buf, { headers: { "Content-Type": "audio/wav", "Cache-Control": "public, max-age=86400" } });
+    }
+
+    // Each ringing cell hits this when it answers: screen with a whisper. Pressing
+    // a key joins the conference; no key (or a cell's voicemail) just drops this
+    // leg, leaving the other cells ringing.
+    if (path === "/voice/agent-whisper") {
+      const conf = u.searchParams.get("conf") || "";
+      const caller = u.searchParams.get("caller") || "";
+      const fromPhrase = caller ? ` from <say-as interpret-as="telephone">${caller}</say-as>` : "";
       return twiml(
-        `<Gather numDigits="1" timeout="8" action="${origin}/voice/whisper-accept" method="POST">` +
-          say("You have a call on your business line. Press any key to take it.") +
+        `<Gather numDigits="1" timeout="10" action="${origin}/voice/agent-accept?conf=${encodeURIComponent(conf)}" method="POST">` +
+          say(`You have a call on your business line${fromPhrase}. Press any key to take it.`) +
         `</Gather>` +
-        // No key (e.g. voicemail answered) → drop this leg without bridging.
         `<Hangup/>`
       );
     }
 
-    // A key was pressed → accept. Finishing this TwiML bridges the caller in.
-    if (path === "/voice/whisper-accept") {
-      return twiml(say("Connecting you now."));
+    // A cell pressed a key → they take the call. Cancel the other still-ringing
+    // legs, then join the conference (capped at 2 so a late second accept can't
+    // create a three-way).
+    if (path === "/voice/agent-accept") {
+      const conf = u.searchParams.get("conf") || "";
+      const thisSid = ((await request.formData()).get("CallSid") || "").toString();
+      const raw = await env.CALL_STATE.get(`conf:${conf}`);
+      const st = raw ? JSON.parse(raw) : null;
+      if (st && st.joined && st.acceptedBy && st.acceptedBy !== thisSid) {
+        return twiml(say("Sorry, this call was already taken by someone else. Goodbye.") + `<Hangup/>`);
+      }
+      ctx.waitUntil((async () => {
+        const cur = await env.CALL_STATE.get(`conf:${conf}`);
+        if (!cur) return;
+        const s = JSON.parse(cur);
+        if (s.joined) return;
+        s.joined = true; s.acceptedBy = thisSid;
+        await env.CALL_STATE.put(`conf:${conf}`, JSON.stringify(s), { expirationTtl: 600 });
+        for (const sid of s.agentSids) {
+          if (sid !== thisSid) twilioUpdateCall(env, sid, { Status: "canceled" }).catch(() => {});
+        }
+      })());
+      return twiml(
+        say("Connecting you now.") +
+        `<Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="true" ` +
+        `beep="false" maxParticipants="2">${conf}</Conference></Dial>`
+      );
     }
 
-    // After the dial: hang up if a person actually took the call; otherwise send
-    // the caller to the business voicemail.
-    if (path === "/voice/after-dial") {
-      const status = ((await request.formData()).get("DialCallStatus") || "").toString();
-      if (status === "completed") return twiml(`<Hangup/>`);
-      return twiml(`<Redirect method="POST">/voice/voicemail</Redirect>`);
+    // Fires as each agent leg ends. Once every leg has ended with nobody having
+    // accepted, pull the caller off hold and end the call politely (no voicemail).
+    if (path === "/voice/agent-status") {
+      const conf = u.searchParams.get("conf") || "";
+      ctx.waitUntil((async () => {
+        const raw = await env.CALL_STATE.get(`conf:${conf}`);
+        if (!raw) return;
+        const st = JSON.parse(raw);
+        if (st.joined) return;
+        st.pending = Math.max(0, (st.pending || 0) - 1);
+        await env.CALL_STATE.put(`conf:${conf}`, JSON.stringify(st), { expirationTtl: 600 });
+        if (st.pending === 0 && st.callerSid) {
+          await twilioUpdateCall(env, st.callerSid, { Url: `${origin}/voice/no-answer`, Method: "POST" }).catch(() => {});
+        }
+      })());
+      return new Response("ok");
+    }
+
+    // Nobody picked up — send the caller to voicemail so the lead isn't lost.
+    if (path === "/voice/no-answer") {
+      return twiml(
+        say("Sorry, we couldn't reach anyone right now.") +
+        `<Redirect method="POST">/voice/voicemail</Redirect>`
+      );
     }
 
     // Voicemail prompt + record.

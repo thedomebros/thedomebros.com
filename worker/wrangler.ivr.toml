@@ -6,3 +6,10 @@ name = "twilio-ivr"
 main = "twilio-ivr-worker.js"
 compatibility_date = "2026-06-27"
 keep_vars = true
+
+# Tracks per-call ring state (agent leg SIDs, caller SID) so that when one team
+# member accepts, the other ringing phones are canceled and an all-missed call
+# ends cleanly. Created with: npx wrangler kv namespace create CALL_STATE
+[[kv_namespaces]]
+binding = "CALL_STATE"
+id = "7fc153cf34ac4a2d85014b9f777940ae"
