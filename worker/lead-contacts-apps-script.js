@@ -270,3 +270,42 @@ function backfillLeadsToApp() {
   console.log("Backfill done: " + sent + " sent, " + skipped + " skipped.");
   return "sent " + sent + ", skipped " + skipped;
 }
+
+// ---- One-time: pull past quote emails (message + attachments) into the app ----
+// Reads the lead emails in this Gmail account and posts each into the
+// customer's thread via /api/ingest-quote (original date preserved). Threads
+// get the "app-backfilled" Gmail label so re-runs skip them. Run from the
+// editor; approve the Gmail permission on first run.
+function backfillQuoteThreads() {
+  var q = 'subject:("New quote request" OR "New quick lead") -label:app-backfilled';
+  var threads = GmailApp.search(q, 0, 100);
+  var label = GmailApp.getUserLabelByName("app-backfilled") || GmailApp.createLabel("app-backfilled");
+  var sent = 0, skipped = 0;
+  threads.forEach(function (t) {
+    t.getMessages().forEach(function (m) {
+      var subj = m.getSubject() || "";
+      if (!/New (quote request|quick lead)/.test(subj)) return;
+      var body = m.getPlainBody() || "";
+      function grab(lbl) { var mm = body.match(new RegExp(lbl + ":\\s*\\n?([^\\n]*)")); return mm ? mm[1].trim() : ""; }
+      var name = grab("Name"), email = grab("Email"), phone = grab("Phone");
+      var pool = grab("Pool size"), zip = grab("Zip");
+      var msgTxt = "";
+      var mi = body.indexOf("Message:");
+      if (mi > -1) msgTxt = body.slice(mi + 8).split(/\nTexts OK\?|\nAttachments:/)[0].trim();
+      var src = (subj.match(/\(([^)]+)\)/) || [])[1] || "site";
+      if (!email && !phone) { skipped++; return; }
+      var payload = { phone: phone, email: email, name: name, source: src, pool_size: pool, zip: zip, message: msgTxt, at: m.getDate().toISOString() };
+      var atts = m.getAttachments({ includeInlineImages: false, includeAttachments: true });
+      for (var i = 0; i < atts.length; i++) payload["attachment" + i] = atts[i].copyBlob();
+      var r = UrlFetchApp.fetch(MSG_INGEST.replace("/api/ingest", "/api/ingest-quote"), {
+        method: "post", headers: { "X-Ingest-Secret": MSG_INGEST_SECRET },
+        payload: payload, muteHttpExceptions: true,
+      });
+      if (r.getResponseCode() === 200) sent++;
+      else { skipped++; console.log("failed:", subj, r.getResponseCode(), r.getContentText().slice(0, 150)); }
+    });
+    t.addLabel(label);
+  });
+  console.log("Quote backfill: " + sent + " sent, " + skipped + " skipped.");
+  return "sent " + sent + ", skipped " + skipped;
+}
