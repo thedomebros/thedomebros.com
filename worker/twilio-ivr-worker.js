@@ -195,8 +195,11 @@ export default {
     // call; a cell's voicemail can't, so that leg hangs up un-bridged and the
     // caller is NEVER dumped into a personal greeting.
     if (path === "/voice/whisper") {
+      // timeout 4: a human presses within a couple of seconds; the long tail is
+      // only ever a voicemail robot, and every second here is dead air for the
+      // customer between ring attempts.
       return twiml(
-        `<Gather numDigits="1" timeout="8" action="${origin}/voice/whisper-accept" method="POST">` +
+        `<Gather numDigits="1" timeout="4" action="${origin}/voice/whisper-accept" method="POST">` +
           say("Business call. Press any key to take it.") +
         `</Gather>` +
         `<Hangup/>`
