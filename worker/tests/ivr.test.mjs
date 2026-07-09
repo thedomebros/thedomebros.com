@@ -55,6 +55,24 @@ console.log('Menu:');
   ok('root serves info text', info.includes('IVR'));
 }
 
+console.log('Team call-through (dial-out):');
+{
+  const xml = await (await post('/voice', { From: '+18017354578', To: '+13852044760' })).text();
+  ok('team caller gets dial-out, not the menu', xml.includes('/voice/dialout') && !xml.includes('/voice/route'));
+  calls.length = 0;
+  const dxml = await (await post('/voice/dialout', { Digits: '8015551234', To: '+13852044760' })).text();
+  ok('dials entered number as the business line', dxml.includes('callerId="+13852044760"') && dxml.includes('+18015551234'));
+  ok('outgoing call logged to messaging', find('/api/call-event').some((c) => c.json.event === 'outgoing' && c.json.from === '+18015551234'));
+  const zxml = await (await post('/voice/dialout', { Digits: '0', To: '+13852044760' })).text();
+  ok('0# escapes to the customer menu', zxml.includes('/voice/menu'));
+  const mxml = await (await post('/voice/menu', {})).text();
+  ok('/voice/menu serves the menu', mxml.includes('/voice/route'));
+  const badxml = await (await post('/voice/dialout', { Digits: '12', To: '+13852044760' })).text();
+  ok('bad digits -> retry', badxml.includes("didn't look right") || badxml.includes('/voice'));
+  const cxml = await (await post('/voice', { From: '+15559998888', To: '+13852044760' })).text();
+  ok('customers still get the menu', cxml.includes('/voice/route'));
+}
+
 console.log('Routing digit 3 -> voicemail:');
 {
   const xml = await (await post('/voice/route', { Digits: '3', CallSid: 'CA_caller0', From: '+13855551000', To: '+13852044760' })).text();

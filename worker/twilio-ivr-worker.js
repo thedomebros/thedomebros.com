@@ -82,17 +82,60 @@ export default {
     const path = u.pathname.replace(/\/+$/, "") || "/";
 
     // Inbound CALL → keypad menu.
+    const MENU =
+      `<Gather numDigits="1" action="/voice/route" method="POST" timeout="6">` +
+        say(
+          "Thanks for calling The Dome <phoneme alphabet=\"ipa\" ph=\"broʊz\">Bros</phoneme>. For a new pool dome quote, press 1. " +
+          "For an existing install or seasonal service, press 2. To leave a message, press 3."
+        ) +
+      `</Gather>` +
+      // No input → repeat the menu once.
+      `<Redirect method="POST">/voice</Redirect>`;
+
     if (path === "/voice") {
-      return twiml(
-        `<Gather numDigits="1" action="/voice/route" method="POST" timeout="6">` +
-          say(
-            "Thanks for calling The Dome <phoneme alphabet=\"ipa\" ph=\"broʊz\">Bros</phoneme>. For a new pool dome quote, press 1. " +
-            "For an existing install or seasonal service, press 2. To leave a message, press 3."
-          ) +
-        `</Gather>` +
-        // No input → repeat the menu once.
-        `<Redirect method="POST">/voice</Redirect>`
-      );
+      // Team call-through: when one of OUR cells calls the business line, offer
+      // dial-out instead of the customer menu — the outbound call then shows the
+      // business number as caller ID. Press 0# for the normal menu.
+      const from = ((await request.formData()).get("From") || "").toString();
+      const cells = (env.SALES_CELLS || "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (from && cells.includes(from)) {
+        return twiml(
+          `<Gather finishOnKey="#" timeout="12" action="/voice/dialout" method="POST">` +
+            say("Business line. Enter the number to call, then press pound. Or zero pound for the menu.") +
+          `</Gather>` +
+          `<Redirect method="POST">/voice</Redirect>`
+        );
+      }
+      return twiml(MENU);
+    }
+
+    // Serve the customer menu directly (team members escape dial-out with 0#).
+    if (path === "/voice/menu") {
+      return twiml(MENU);
+    }
+
+    // Team dial-out: place the call from the business number.
+    if (path === "/voice/dialout") {
+      const form = await request.formData();
+      const digits = (form.get("Digits") || "").toString().replace(/\D/g, "");
+      const bizNum = (form.get("To") || form.get("Called") || "").toString();
+      if (digits === "0") return twiml(`<Redirect method="POST">/voice/menu</Redirect>`);
+      if (digits.length === 10 || (digits.length === 11 && digits[0] === "1")) {
+        const num = digits.length === 10 ? "+1" + digits : "+" + digits;
+        // Log it in the messaging app's call history (best-effort).
+        if (env.VM_SECRET) {
+          ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/call-event", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
+            body: JSON.stringify({ from: num, event: "outgoing" }),
+          }).catch(() => {}));
+        }
+        return twiml(
+          say("Connecting.") +
+          `<Dial callerId="${bizNum}" answerOnBridge="true"><Number>${num}</Number></Dial>`
+        );
+      }
+      return twiml(say("That number didn't look right.") + `<Redirect method="POST">/voice</Redirect>`);
     }
 
     // Route the keypress.
