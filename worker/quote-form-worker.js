@@ -378,7 +378,7 @@ export default {
     // contact in the shared inbox with the right consent state. No-op until
     // MESSAGING_INGEST_URL + MESSAGING_INGEST_SECRET are set (i.e. after the
     // messaging app is deployed). Never blocks the submission.
-    if (env.MESSAGING_INGEST_SECRET && phone) {
+    if (env.MESSAGING_INGEST_SECRET && (phone || email)) {
       ctx.waitUntil(messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {}));
     }
 
