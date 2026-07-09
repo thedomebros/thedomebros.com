@@ -95,6 +95,13 @@ function messagingFetch(env, path, payload) {
   return fetch(String(env.MESSAGING_INGEST_URL || "").replace(/\/api\/ingest\/?$/, "") + path, init);
 }
 
+// Multipart variant of messagingFetch (files ride along; no JSON header).
+function messagingFetchForm(env, path, formData) {
+  const init = { method: "POST", headers: { "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET }, body: formData };
+  if (env.MESSAGING) return env.MESSAGING.fetch("https://messaging.internal" + path, init);
+  return fetch(String(env.MESSAGING_INGEST_URL || "").replace(/\/api\/ingest\/?$/, "") + path, init);
+}
+
 async function sendEmail(apiKey, payload) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -380,6 +387,13 @@ export default {
     // messaging app is deployed). Never blocks the submission.
     if (env.MESSAGING_INGEST_SECRET && (phone || email)) {
       ctx.waitUntil(messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {}));
+      // Drop the quote message + uploaded photos into the lead's thread in the app.
+      const qf = new FormData();
+      qf.set("phone", phone || ""); qf.set("email", email || ""); qf.set("name", name || "");
+      qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("zip", zip || "");
+      qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
+      for (const file of files) qf.append("attachments", file, file.name || "photo");
+      ctx.waitUntil(messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {}));
     }
 
     return json({ success: true }, 200, origin);
