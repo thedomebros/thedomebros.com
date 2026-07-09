@@ -54,6 +54,20 @@ async function sendEmail(apiKey, payload) {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
 
+// Post an event to the messaging app. MUST go through the MSG service binding —
+// a plain fetch() to another Worker's *.workers.dev URL on the same account is
+// silently dropped by Cloudflare (this bit us: call-events and voicemails
+// vanished while returning no error).
+function msgPost(env, path, body) {
+  const url = `https://messaging.thedomebros-com.workers.dev${path}`;
+  const init = {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET || "" },
+    body: JSON.stringify(body),
+  };
+  return (env.MSG ? env.MSG.fetch(url, init) : fetch(url, init)).catch(() => {});
+}
+
 // One step of the sequential ring: dial cell i with the whisper screen; the
 // Dial's action advances to i+1 (or voicemail) unless the call was taken. No
 // callerId attribute — the customer's real number passes through to the cell.
@@ -113,13 +127,7 @@ export default {
       if (digits.length === 10 || (digits.length === 11 && digits[0] === "1")) {
         const num = digits.length === 10 ? "+1" + digits : "+" + digits;
         // Log it in the messaging app's call history (best-effort).
-        if (env.VM_SECRET) {
-          ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/call-event", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
-            body: JSON.stringify({ from: num, event: "outgoing" }),
-          }).catch(() => {}));
-        }
+        ctx.waitUntil(msgPost(env, "/api/call-event", { from: num, event: "outgoing" }));
         return twiml(
           say("Connecting.") +
           `<Dial callerId="${bizNum}" answerOnBridge="true"><Number>${num}</Number></Dial>`
@@ -153,15 +161,9 @@ export default {
           [cells[i], cells[j]] = [cells[j], cells[i]];
         }
 
-        // Tell the messaging app about the incoming call (push with name + call log).
+        // Tell the messaging app about the incoming call (call log entry).
         const caller = (form.get("From") || "").toString();
-        if (env.VM_SECRET) {
-          ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/call-event", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
-            body: JSON.stringify({ from: caller, event: "incoming" }),
-          }).catch(() => {}));
-        }
+        ctx.waitUntil(msgPost(env, "/api/call-event", { from: caller, event: "incoming" }));
 
         return twiml(dialStep(origin, cells, 0));
       }
@@ -254,13 +256,7 @@ export default {
       }
       // Also drop the voicemail into the messaging app (shows in the caller's
       // thread + the Voicemail page). Best-effort; the email above is the backup.
-      if (env.VM_SECRET) {
-        ctx.waitUntil(fetch("https://messaging.thedomebros-com.workers.dev/api/voicemail", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET },
-          body: JSON.stringify({ from, transcript, recording_url: recordingUrl }),
-        }).catch(() => {}));
-      }
+      ctx.waitUntil(msgPost(env, "/api/voicemail", { from, transcript, recording_url: recordingUrl }));
       return new Response("ok"); // Twilio ignores the body of a transcribe callback.
     }
 

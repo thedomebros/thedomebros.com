@@ -13,3 +13,10 @@ keep_vars = true
 [[kv_namespaces]]
 binding = "CALL_STATE"
 id = "7fc153cf34ac4a2d85014b9f777940ae"
+
+# Direct worker-to-worker channel to the messaging app. Plain fetch() to a
+# *.workers.dev URL from another Worker on the same account gets dropped, so
+# call-events and voicemails must go through this binding.
+[[services]]
+binding = "MSG"
+service = "messaging"
