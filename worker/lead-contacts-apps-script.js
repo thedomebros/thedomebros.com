@@ -232,3 +232,41 @@ function upsertFromMessaging(data) {
     People.ContactGroups.Members.modify({ resourceNamesToAdd: [resourceName] }, getQuoteLeadLabel());
   }
 }
+
+// ---- One-time: push every "Quote Lead" Google Contact into the messaging app ----
+// Run from the editor (Run > backfillLeadsToApp). Approve the permission prompt
+// on first run (it adds the external-request scope). Safe to re-run — the app
+// dedupes by phone/email.
+var MSG_INGEST = "https://messaging.thedomebros-com.workers.dev/api/ingest";
+var MSG_INGEST_SECRET = "REPLACE_WITH_INGEST_SECRET";
+
+function backfillLeadsToApp() {
+  var label = getQuoteLeadLabel();
+  var grp = People.ContactGroups.get(label, { maxMembers: 1000 });
+  var names = (grp && grp.memberResourceNames) || [];
+  var sent = 0, skipped = 0;
+  for (var i = 0; i < names.length; i += 200) {
+    var res = People.People.getBatchGet({
+      resourceNames: names.slice(i, i + 200),
+      personFields: "names,emailAddresses,phoneNumbers",
+    });
+    var rs = (res && res.responses) || [];
+    for (var j = 0; j < rs.length; j++) {
+      var p = rs[j].person; if (!p) continue;
+      var nm = (p.names && p.names[0] && p.names[0].displayName) || "";
+      var ph = (p.phoneNumbers && p.phoneNumbers[0] && p.phoneNumbers[0].value) || "";
+      var em = (p.emailAddresses && p.emailAddresses[0] && p.emailAddresses[0].value) || "";
+      // sentinel emails are app-generated, not a real reachable address
+      if (/@sms\.thedomebros\.com$/i.test(em)) em = "";
+      if (!ph && !em) { skipped++; continue; }
+      var r = UrlFetchApp.fetch(MSG_INGEST, {
+        method: "post", contentType: "application/json", muteHttpExceptions: true,
+        headers: { "X-Ingest-Secret": MSG_INGEST_SECRET },
+        payload: JSON.stringify({ name: nm, phone: ph, email: em, source: "gcontacts" }),
+      });
+      if (r.getResponseCode() === 200) sent++; else { skipped++; console.log("failed:", nm, r.getResponseCode(), r.getContentText()); }
+    }
+  }
+  console.log("Backfill done: " + sent + " sent, " + skipped + " skipped.");
+  return "sent " + sent + ", skipped " + skipped;
+}
