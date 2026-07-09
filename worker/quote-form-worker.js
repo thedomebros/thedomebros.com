@@ -81,6 +81,20 @@ function brandEmail(inner) {
   );
 }
 
+// POST JSON to the messaging Worker. Goes through the MESSAGING service
+// binding — Cloudflare blocks fetching another Worker on the same account via
+// its workers.dev URL (error 1042) — with the public URL as a fallback when
+// the binding isn't configured.
+function messagingFetch(env, path, payload) {
+  const init = {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET },
+    body: JSON.stringify(payload),
+  };
+  if (env.MESSAGING) return env.MESSAGING.fetch("https://messaging.internal" + path, init);
+  return fetch(String(env.MESSAGING_INGEST_URL || "").replace(/\/api\/ingest\/?$/, "") + path, init);
+}
+
 async function sendEmail(apiKey, payload) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -141,13 +155,11 @@ async function handleConfirm(request, env, origin) {
   }
 
   // Reflect the status in the messaging app's appointment banner (best-effort).
-  if (eventId && env.MESSAGING_INGEST_URL && env.MESSAGING_INGEST_SECRET) {
+  if (eventId && env.MESSAGING_INGEST_SECRET) {
     try {
-      await fetch(env.MESSAGING_INGEST_URL.replace("/api/ingest", "/api/appt/status"), {
-        method: "POST", headers: { "Content-Type": "application/json", "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET },
-        body: JSON.stringify({ code: eventId, choice, note }),
-      });
-    } catch (e) { /* best-effort */ }
+      const r = await messagingFetch(env, "/api/appt/status", { code: eventId, choice, note });
+      console.log("appt-status push ->", r.status);
+    } catch (e) { console.log("appt-status push FAILED:", String(e)); }
   }
 
   const noteLabel = choice === "reschedule" ? "Preferred times" : "Note";
@@ -366,12 +378,8 @@ export default {
     // contact in the shared inbox with the right consent state. No-op until
     // MESSAGING_INGEST_URL + MESSAGING_INGEST_SECRET are set (i.e. after the
     // messaging app is deployed). Never blocks the submission.
-    if (env.MESSAGING_INGEST_URL && env.MESSAGING_INGEST_SECRET && phone) {
-      ctx.waitUntil(fetch(env.MESSAGING_INGEST_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Ingest-Secret": env.MESSAGING_INGEST_SECRET },
-        body: JSON.stringify({ phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }),
-      }).catch(() => {}));
+    if (env.MESSAGING_INGEST_SECRET && phone) {
+      ctx.waitUntil(messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {}));
     }
 
     return json({ success: true }, 200, origin);

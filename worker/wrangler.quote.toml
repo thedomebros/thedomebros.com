@@ -1,8 +1,21 @@
 # Deploy the quote-form Worker:
 #   cd website/worker && npx wrangler deploy -c wrangler.quote.toml
-# Vars/secrets (RESEND_API_KEY, LEAD_TO, MAIL_FROM) stay in the Cloudflare
-# dashboard; keep_vars = true stops a deploy from wiping them.
+# Secrets (RESEND_API_KEY, LEAD_TO, MAIL_FROM) stay in the Cloudflare
+# dashboard; keep_vars = true stops a deploy from wiping them. LEAD_LOG_URL is
+# the standalone Apps Script Contacts-sync web app (/exec) — kept here so it's
+# source-controlled; a deploy overwrites the dashboard copy with this value.
 name = "quote-form"
 main = "quote-form-worker.js"
 compatibility_date = "2026-06-27"
 keep_vars = true
+
+[vars]
+LEAD_LOG_URL = "https://script.google.com/macros/s/AKfycbzD58UVQDmttZF_cpDsroVhGgCLnl5c27jC1sl6lp2HEPnN9SFlmHN9ACE0y6BP1XP8/exec"
+
+# Direct worker-to-worker channel to the messaging app. Cloudflare blocks
+# fetching another Worker on the same account via its workers.dev URL
+# (error 1042), so the lead ingest + appointment-status pushes go through
+# this service binding instead.
+[[services]]
+binding = "MESSAGING"
+service = "messaging"
