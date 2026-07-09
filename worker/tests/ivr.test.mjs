@@ -8,6 +8,14 @@ let pass = 0, fail = 0;
 const ok = (n, c, extra = '') => { if (c) { pass++; console.log('  PASS', n); } else { fail++; console.log('  FAIL', n, extra); } };
 
 // ---- tiny mocks (kept local so this repo stays standalone) ----
+function makeKV() {
+  const store = new Map();
+  return {
+    store,
+    async put(k, v) { store.set(k, v); },
+    async get(k) { const v = store.get(k); return v === undefined ? null : v; },
+  };
+}
 const calls = [];
 let responder = null;
 globalThis.fetch = async (url, opts = {}) => {
@@ -27,6 +35,7 @@ const BASE = 'https://twilio-ivr.test.workers.dev';
 const env = {
   SALES_CELLS: '+18017354578, +18014725872,+13852086150',
   VM_SECRET: 'vm_secret_test',
+  CALL_STATE: makeKV(),
 };
 async function post(path, params, e = env) {
   const c = ctx();
@@ -97,13 +106,19 @@ console.log('Routing with no cells:');
 console.log('Sequential progression (/voice/seq):');
 {
   const order = encodeURIComponent('+18011111111,+18022222222,+18033333333');
-  let xml = await (await post('/voice/seq?order=' + order + '&i=1', { DialCallStatus: 'no-answer' })).text();
+  let xml = await (await post('/voice/seq?order=' + order + '&i=1', { CallSid: 'CA_cust1', DialCallStatus: 'no-answer' })).text();
   ok('no-answer advances to the next cell', xml.includes('+18022222222') && xml.includes('i=2'));
-  xml = await (await post('/voice/seq?order=' + order + '&i=1', { DialCallStatus: 'busy' })).text();
+  xml = await (await post('/voice/seq?order=' + order + '&i=1', { CallSid: 'CA_cust1', DialCallStatus: 'busy' })).text();
   ok('busy also advances', xml.includes('+18022222222'));
-  xml = await (await post('/voice/seq?order=' + order + '&i=1', { DialCallStatus: 'completed' })).text();
-  ok('answered call ends cleanly, no more ringing', xml.includes('<Hangup/>') && !xml.includes('<Dial'));
-  xml = await (await post('/voice/seq?order=' + order + '&i=3', { DialCallStatus: 'no-answer' })).text();
+  // THE BUG WE SHIPPED ONCE: a cell that answers the whisper and hangs up (or
+  // its voicemail) reports "completed" — it must ADVANCE, not hang up on the customer.
+  xml = await (await post('/voice/seq?order=' + order + '&i=1', { CallSid: 'CA_cust1', DialCallStatus: 'completed' })).text();
+  ok('answered-but-not-accepted still advances', xml.includes('+18022222222') && !xml.includes('<Hangup/>'));
+  // Accepted via keypress -> completed really means taken.
+  await post('/voice/whisper-accept', { CallSid: 'CA_leg9', ParentCallSid: 'CA_cust1', Digits: '5' });
+  xml = await (await post('/voice/seq?order=' + order + '&i=1', { CallSid: 'CA_cust1', DialCallStatus: 'completed' })).text();
+  ok('accepted call ends cleanly, no more ringing', xml.includes('<Hangup/>') && !xml.includes('<Dial'));
+  xml = await (await post('/voice/seq?order=' + order + '&i=3', { CallSid: 'CA_cust2', DialCallStatus: 'no-answer' })).text();
   ok('all missed -> apology + voicemail', xml.includes('/voice/voicemail'));
 }
 

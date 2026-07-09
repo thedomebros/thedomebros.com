@@ -170,13 +170,18 @@ export default {
       return twiml(`<Redirect method="POST">/voice/voicemail</Redirect>`);
     }
 
-    // Sequential-ring progression: fires when a leg finishes. "completed" means a
-    // person pressed a key and the call was bridged (and has now ended) — hang up.
-    // Anything else (no-answer, busy, whisper dropped by voicemail) → next cell,
-    // or the business voicemail once everyone has been tried.
+    // Sequential-ring progression: fires when a leg finishes. DialCallStatus is
+    // NOT trustworthy here — a cell that answers the whisper and hangs up (or its
+    // voicemail) also reports "completed". Only the whisper KEYPRESS (recorded in
+    // KV by /voice/whisper-accept) means the call was really taken; everything
+    // else advances to the next cell, then the business voicemail.
     if (path === "/voice/seq") {
-      const status = ((await request.formData()).get("DialCallStatus") || "").toString();
-      if (status === "completed") return twiml(`<Hangup/>`);
+      const form = await request.formData();
+      const status = (form.get("DialCallStatus") || "").toString();
+      if (status === "completed") {
+        const accepted = env.CALL_STATE ? await env.CALL_STATE.get("acc:" + (form.get("CallSid") || "")) : null;
+        if (accepted) return twiml(`<Hangup/>`);
+      }
       const order = (u.searchParams.get("order") || "").split(",").filter(Boolean);
       const i = parseInt(u.searchParams.get("i") || "0", 10);
       if (i < order.length) return twiml(dialStep(origin, order, i));
@@ -198,8 +203,14 @@ export default {
       );
     }
 
-    // A key was pressed → accept. Finishing this TwiML bridges the caller in.
+    // A key was pressed → accept. Record it against the CUSTOMER'S call (this
+    // webhook runs on the cell's leg; ParentCallSid is the customer), then
+    // finishing this TwiML bridges the caller in.
     if (path === "/voice/whisper-accept") {
+      const parent = ((await request.formData()).get("ParentCallSid") || "").toString();
+      if (env.CALL_STATE && parent) {
+        ctx.waitUntil(env.CALL_STATE.put("acc:" + parent, "1", { expirationTtl: 3600 }));
+      }
       return twiml(say("Connecting you now."));
     }
 

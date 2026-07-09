@@ -6,3 +6,10 @@ name = "twilio-ivr"
 main = "twilio-ivr-worker.js"
 compatibility_date = "2026-06-27"
 keep_vars = true
+
+# Records which calls were ACCEPTED via the whisper keypress. Needed because
+# Twilio reports an answered-then-hung-up screen as "completed" — same as a
+# taken call — so the keypress is the only reliable "call was handled" signal.
+[[kv_namespaces]]
+binding = "CALL_STATE"
+id = "7fc153cf34ac4a2d85014b9f777940ae"
