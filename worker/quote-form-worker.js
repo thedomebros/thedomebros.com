@@ -386,14 +386,18 @@ export default {
     // MESSAGING_INGEST_URL + MESSAGING_INGEST_SECRET are set (i.e. after the
     // messaging app is deployed). Never blocks the submission.
     if (env.MESSAGING_INGEST_SECRET && (phone || email)) {
-      ctx.waitUntil(messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {}));
       // Drop the quote message + uploaded photos into the lead's thread in the app.
       const qf = new FormData();
       qf.set("phone", phone || ""); qf.set("email", email || ""); qf.set("name", name || "");
       qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("zip", zip || "");
       qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
       for (const file of files) qf.append("attachments", file, file.name || "photo");
-      ctx.waitUntil(messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {}));
+      // Sequential on purpose: firing both at once raced to create the contact,
+      // leaving two half-filled conversations in the inbox.
+      ctx.waitUntil((async () => {
+        await messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {});
+        await messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {});
+      })());
     }
 
     return json({ success: true }, 200, origin);
