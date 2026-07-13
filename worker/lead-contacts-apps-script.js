@@ -65,6 +65,16 @@ function upsertContact(data) {
   // Dedupe: skip if a contact with this email or phone already exists.
   if (findExistingContact(email, phone)) return;
 
+  // Quick leads submit no name. An email-only lead is titled by its email — it
+  // identifies the person, and with no phone they can never call in. A
+  // phone-only lead gets a dated placeholder ("Quick Lead 6/25/26") so an
+  // incoming call shows recognizable caller ID instead of a bare number.
+  // (Must run BEFORE the sentinel below so the title is never the fake email.)
+  if (!name) {
+    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "M/d/yy");
+    name = email || ("Quick Lead " + dateStr);
+  }
+
   // Phone-only lead: synthesize a no-inbox sentinel email so the contact can be
   // added as a Google Calendar guest (Calendar requires an email) and still
   // autocompletes by name. The calendar reminder script recognizes this address
@@ -76,15 +86,7 @@ function upsertContact(data) {
   }
 
   var resource = {};
-  // Quick leads submit no name. Give them a dated placeholder ("Quick Lead
-  // 6/25/26") so an incoming call shows recognizable caller ID instead of a
-  // bare number.
-  if (name) {
-    resource.names = [{ givenName: name }];
-  } else {
-    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "M/d/yy");
-    resource.names = [{ givenName: "Quick Lead " + dateStr }];
-  }
+  resource.names = [{ givenName: name }];
   if (email) resource.emailAddresses = [{ value: email }];
   if (phone) resource.phoneNumbers = [{ value: phone }];
 
