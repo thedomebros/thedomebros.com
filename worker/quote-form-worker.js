@@ -227,7 +227,9 @@ export default {
     const email = (form.get("email") || "").toString().trim();
     const phone = (form.get("phone") || "").toString().trim();
     const poolSize = (form.get("pool_size") || "").toString().trim();
-    const zip = (form.get("zip") || "").toString().trim();
+    // "address" accepts a full street address or just a ZIP; cached copies of
+    // the old form still post the field as "zip".
+    const address = (form.get("address") || form.get("zip") || "").toString().trim();
     const message = (form.get("message") || "").toString().trim();
     const _src = (form.get("source") || "").toString().trim().toLowerCase();
     const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
@@ -290,7 +292,7 @@ export default {
 
     const rows = isQuick
       ? Object.fromEntries([["Email", email], ["Phone", phone]].filter(([, v]) => v))
-      : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Zip: zip, Message: message };
+      : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Address: address, Message: message };
     // Surface SMS consent so you know who you can text vs. who needs verbal consent first.
     if (phone) rows["Texts OK?"] = smsConsent ? "YES — opted in on the form" : "NO — get verbal consent before texting";
     const leadHtml = Object.entries(rows)
@@ -377,7 +379,7 @@ export default {
       ctx.waitUntil(fetch(env.LEAD_LOG_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, zip, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message, sms_consent: smsConsent ? "yes" : "no" }),
+        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, address, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message, sms_consent: smsConsent ? "yes" : "no" }),
       }).catch(() => {}));
     }
 
@@ -389,7 +391,7 @@ export default {
       // Drop the quote message + uploaded photos into the lead's thread in the app.
       const qf = new FormData();
       qf.set("phone", phone || ""); qf.set("email", email || ""); qf.set("name", name || "");
-      qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("zip", zip || "");
+      qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("address", address || "");
       qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
       for (const file of files) qf.append("attachments", file, file.name || "photo");
       // Sequential on purpose: firing both at once raced to create the contact,

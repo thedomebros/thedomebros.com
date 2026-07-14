@@ -93,7 +93,8 @@ function upsertContact(data) {
   // A short note ties the contact back to the quote that created it.
   var note = [];
   if (data.pool_size) note.push("Pool size: " + data.pool_size);
-  if (data.zip) note.push("Zip: " + data.zip);
+  var addr = data.address || data.zip; // older worker deploys send "zip"
+  if (addr) note.push("Address: " + addr);
   if (data.source) note.push("Source: " + data.source);
   // Record SMS consent so it's visible on the contact (compliance evidence).
   if (phone) note.push(data.sms_consent === "yes" ? "Texts: OPTED IN (form)" : "Texts: NOT opted in — get consent first");
@@ -290,13 +291,13 @@ function backfillQuoteThreads() {
       var body = m.getPlainBody() || "";
       function grab(lbl) { var mm = body.match(new RegExp(lbl + ":\\s*\\n?([^\\n]*)")); return mm ? mm[1].trim() : ""; }
       var name = grab("Name"), email = grab("Email"), phone = grab("Phone");
-      var pool = grab("Pool size"), zip = grab("Zip");
+      var pool = grab("Pool size"), addr = grab("Address") || grab("Zip");
       var msgTxt = "";
       var mi = body.indexOf("Message:");
       if (mi > -1) msgTxt = body.slice(mi + 8).split(/\nTexts OK\?|\nAttachments:/)[0].trim();
       var src = (subj.match(/\(([^)]+)\)/) || [])[1] || "site";
       if (!email && !phone) { skipped++; return; }
-      var payload = { phone: phone, email: email, name: name, source: src, pool_size: pool, zip: zip, message: msgTxt, at: m.getDate().toISOString() };
+      var payload = { phone: phone, email: email, name: name, source: src, pool_size: pool, address: addr, message: msgTxt, at: m.getDate().toISOString() };
       var atts = m.getAttachments({ includeInlineImages: false, includeAttachments: true });
       for (var i = 0; i < atts.length; i++) payload["attachment" + i] = atts[i].copyBlob();
       var r = UrlFetchApp.fetch(MSG_INGEST.replace("/api/ingest", "/api/ingest-quote"), {
