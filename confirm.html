@@ -108,7 +108,10 @@
   // Reschedule leads with the live slot picker when we know which event this
   // is (the schedule page accepts the same event code); free text stays as the
   // fallback for links minted before the picker existed.
-  if (eventId) {
+  // Flip SCHED_LIVE to true when the scheduler goes live (calendars shared +
+  // SCHED_LIVE=1 on the messaging worker).
+  var SCHED_LIVE = false;
+  if (SCHED_LIVE && eventId) {
     var ps = document.getElementById("btnPickSlot");
     ps.href = "https://thedomebros.com/schedule?e=" + encodeURIComponent(eventId) + (name ? "&n=" + encodeURIComponent(name) : "");
     ps.style.display = "block";
