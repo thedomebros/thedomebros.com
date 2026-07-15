@@ -83,26 +83,32 @@ The Customer agrees to:
    the Customer's responsibility and must be completed before installation.
 4. Obtain any required permits and any HOA or landlord approvals before
    installation. The Company can provide product specifications on request.
-5. Keep the blower running **continuously** while the Dome is installed, and
-   operate and maintain the Dome according to the manufacturer's instructions
-   and the guidance provided at installation.
+5. Operate and maintain the Dome and blower according to the manufacturer's
+   instructions and the guidance provided at installation, including
+   monitoring weather and deflating the Dome ahead of severe wind or heavy
+   snow storms.
 
 ## 5. Operation Notice — Read Carefully
 
-The Dome is **air-supported**. It stays up only while the blower is running.
+The Dome is **air-supported**: it holds its shape only while the blower is
+running.
 
-- **If power to the blower is interrupted, the Dome will deflate**, typically
-  within minutes. A deflated dome can rest on the water and pool edges and, in
-  snow or wind, can be damaged or cause damage.
-- The Customer is solely responsible for maintaining continuous power, for
-  monitoring the Dome during storms and power outages, and for removing
-  excessive snow accumulation per the manufacturer's guidance.
-- The Company recommends a backup power source and an outage alert if the Dome
-  will be unattended for extended periods.
+- **Turning the blower off is a normal part of operation.** When the blower is
+  off, the Dome settles gently onto the water and functions like a pool
+  cover. Re-inflation takes roughly 30 minutes. Many owners deflate the Dome
+  between swims to reduce pool heating costs.
+- **Before severe wind or heavy snow, the Dome should be deflated** (blower
+  switched off) per the manufacturer's guidance, so it rests on the water as a
+  cover. Leaving the Dome inflated and unattended through a severe storm is
+  the highest-risk condition for the Dome and surrounding property.
+- The Customer is solely responsible for monitoring weather conditions and
+  operating the Dome accordingly, including managing snow or ice accumulation
+  per the manufacturer's guidance.
 
 The Company is not responsible for damage to the Dome, the pool, or other
-property caused by power interruption, blower shutoff, snow or ice
-accumulation, or operation contrary to the manufacturer's instructions.
+property caused by failure to deflate the Dome ahead of severe weather, snow
+or ice accumulation left unmanaged, winds beyond the manufacturer's rating, or
+operation contrary to the manufacturer's instructions.
 
 ## 6. Change Orders
 
@@ -143,9 +149,10 @@ if the balance remains unpaid more than 30 days after completion.
 - **Workmanship.** The Company warrants its installation workmanship
   (anchoring, assembly, setup) for **one (1) year** from the installation
   date, and will repair installation defects at no charge during that period.
-- **Exclusions.** No warranty applies to damage caused by: power interruption
-  or blower shutoff; snow or ice loading beyond manufacturer ratings or left
-  unmanaged; winds beyond the manufacturer's rating; punctures, cuts, pets, or
+- **Exclusions.** No warranty applies to damage caused by: failure to deflate
+  the Dome ahead of severe wind or heavy snow as the manufacturer recommends;
+  snow or ice loading beyond manufacturer ratings or left unmanaged; winds
+  beyond the manufacturer's rating; punctures, cuts, pets, or
   vandalism; pool chemical misuse or improper water chemistry; modifications
   or repairs by anyone other than the Company; or use contrary to the
   manufacturer's instructions.
