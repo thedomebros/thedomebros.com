@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Schedule your free measuring | TheDomeBros</title>
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-domebros.png" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--cream:#f6f4ef;--card:#fffdf8;--ink:#1f2a37;--mut:#5b6675;--navy:#1f3b73;--navy-d:#162a52;--navy2:#3a5fa8;--line:#e4ddcf;--err:#b3261e}
+  *{box-sizing:border-box}html,body{margin:0;overflow-x:hidden}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:24px 18px calc(24px + env(safe-area-inset-bottom,0))}
+  h1,h2,h3,.brand,.btn{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em}
+  .brand{font-weight:800;font-size:22px;color:var(--navy);text-decoration:none;margin:8px 0 22px;display:inline-block}
+  .card{width:100%;max-width:480px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 26px;box-shadow:0 4px 20px rgba(31,42,55,.06)}
+  .pill{display:inline-block;background:#e7ecf7;border:1px solid #d4ddf0;color:var(--navy);font-weight:700;font-size:12px;padding:5px 13px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:22px;margin:0 0 6px}
+  .sub{color:var(--mut);font-size:14px;margin:0 0 16px}
+  .cur{margin:0 0 16px;padding:12px 15px;background:#eef1f7;border:1px solid var(--line);border-radius:14px;font-size:13.5px}
+  .cur b{color:var(--navy)}
+  .loading{color:var(--mut);text-align:center;padding:26px 0;font-size:14px}
+  .dayh{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:13.5px;color:var(--navy);margin:16px 0 8px}
+  .times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .slot{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 6px;font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;text-align:center}
+  .slot.on{border-color:var(--navy);background:#eef3fc;color:var(--navy);font-weight:700}
+  .go{position:sticky;bottom:12px;display:none;width:100%;border:0;border-radius:999px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;margin-top:18px;box-shadow:0 8px 22px rgba(31,42,55,.25)}
+  .go:hover{background:var(--navy-d)}
+  .go:disabled{opacity:.55}
+  .fine{color:var(--mut);font-size:12px;margin:14px 0 0;text-align:center}
+  .done{display:none;text-align:center}.done.open{display:block}
+  .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
+  .done h2{font-size:22px;margin:0 0 6px}.done p{color:var(--mut);margin:0}
+  .err{display:none;color:var(--err);font-size:14px;text-align:center;margin-top:12px}
+  .foot{color:var(--mut);font-size:12px;margin-top:18px;text-align:center}
+  .foot a{color:var(--navy2)}
+</style>
+</head>
+<body>
+  <a class="brand" href="https://thedomebros.com">TheDomeBros</a>
+  <div class="card">
+    <div id="pick">
+      <span class="pill">Free measuring visit</span>
+      <h1 id="head">Pick a time that works</h1>
+      <p class="sub" id="sub">These times are open on our calendar. Your pick is a <b>proposed</b> time &mdash; we'll text you to confirm it, so nothing's final until you hear from us.</p>
+      <div class="cur" id="cur" style="display:none"></div>
+      <div class="loading" id="loading">Checking our calendar&hellip;</div>
+      <div id="days"></div>
+      <button class="go" id="go" type="button"></button>
+      <div class="err" id="err"></div>
+      <p class="fine">Visits take up to two hours. Need a time you don't see? Text us at <a href="sms:+13852044760" style="color:var(--navy2)">(385) 204-4760</a>.</p>
+    </div>
+    <div class="done" id="done">
+      <div class="ic">&#10003;</div>
+      <h2>Time proposed!</h2>
+      <p id="doneMsg"></p>
+    </div>
+  </div>
+  <p class="foot">TheDomeBros &middot; Utah County &middot; <a href="tel:+13852044760">(385) 204-4760</a></p>
+
+<script>
+  var WORKER = "https://quote-form.thedomebros-com.workers.dev";
+  var q = new URLSearchParams(location.search);
+  var IDENT = { t: q.get("t") || "", e: q.get("e") || "" };
+  var picked = null;
+
+  function el(id){ return document.getElementById(id); }
+  function fail(msg){
+    el("loading").textContent = msg || "This link isn't working — text us at (385) 204-4760 and we'll set a time up directly.";
+  }
+
+  async function post(path, body){
+    var res = await fetch(WORKER + path, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    var out = await res.json().catch(function(){ return {}; });
+    out._status = res.status;
+    return out;
+  }
+
+  function render(slots){
+    var days = el("days"); days.innerHTML = "";
+    if(!slots.length){ fail("No open times in the next two weeks — text us at (385) 204-4760 and we'll find one together."); return; }
+    el("loading").style.display = "none";
+    var byDay = {};
+    slots.forEach(function(s){ (byDay[s.day] = byDay[s.day] || []).push(s); });
+    Object.keys(byDay).forEach(function(day){
+      var h = document.createElement("div"); h.className = "dayh"; h.textContent = day; days.appendChild(h);
+      var grid = document.createElement("div"); grid.className = "times";
+      byDay[day].forEach(function(s){
+        var b = document.createElement("button"); b.type = "button"; b.className = "slot"; b.textContent = s.time;
+        b.onclick = function(){
+          document.querySelectorAll(".slot.on").forEach(function(x){ x.classList.remove("on"); });
+          b.classList.add("on"); picked = s;
+          var go = el("go");
+          go.style.display = "block";
+          go.textContent = "Propose " + s.day.split(",")[0] + " " + s.time.split(" – ")[0].trim();
+        };
+        grid.appendChild(b);
+      });
+      days.appendChild(grid);
+    });
+  }
+
+  async function load(){
+    try{
+      var out = await post("/schedule/slots", IDENT);
+      if(!out.success){ fail(out.error); return; }
+      if(out.name) el("head").textContent = "Pick a time that works, " + out.name.split(" ")[0];
+      if(out.current){
+        var cur = el("cur");
+        cur.innerHTML = "You currently have <b>" + String(out.current).replace(/[<>&]/g,"") + "</b> — picking a new time below replaces it.";
+        cur.style.display = "block";
+      }
+      render(out.slots || []);
+    }catch(e){ fail(); }
+  }
+
+  el("go").onclick = async function(){
+    if(!picked) return;
+    var go = el("go"); go.disabled = true; go.textContent = "Sending…"; el("err").style.display = "none";
+    try{
+      var out = await post("/schedule/propose", { t: IDENT.t, e: IDENT.e, start: picked.start });
+      if(out.success){
+        el("doneMsg").textContent = (out.when || "Your time") + " is penciled in. We'll text you shortly to confirm it — it's not final until you hear from us.";
+        el("pick").style.display = "none";
+        el("done").classList.add("open");
+        return;
+      }
+      el("err").textContent = out.error || "Something went wrong — text us at (385) 204-4760 instead.";
+      el("err").style.display = "block";
+      go.disabled = false; go.style.display = "none"; picked = null;
+      if(out._status === 409){ el("loading").style.display = "block"; el("loading").textContent = "Refreshing open times…"; load(); }
+    }catch(e){
+      el("err").textContent = "Something went wrong — text us at (385) 204-4760 instead.";
+      el("err").style.display = "block";
+      go.disabled = false;
+    }
+  };
+
+  if(!IDENT.t && !IDENT.e){ fail(); } else { load(); }
+</script>
+</body>
+</html>

@@ -55,6 +55,8 @@
 
       <button class="btn alt" id="btnResched">Request a different time</button>
       <div class="sub" id="reschedBox">
+        <a class="btn confirm" id="btnPickSlot" style="display:none;text-decoration:none" href="#">Pick from our open times</a>
+        <p id="pickOr" style="display:none;color:var(--mut);font-size:13px;text-align:center;margin:2px 0 12px">or tell us what generally works:</p>
         <div class="prow">
           <div><label class="pl">Preferred date</label><input id="rDate" type="text" placeholder="Tap to choose a date" /></div>
           <div><label class="pl">Preferred time</label><input id="rTime" type="text" placeholder="Tap to choose a time" /></div>
@@ -103,7 +105,16 @@
 
   function show(id){ document.getElementById(id).classList.add("open"); }
   function hide(id){ document.getElementById(id).classList.remove("open"); }
-  document.getElementById("btnResched").onclick = function(){ hide("cancelBox"); show("reschedBox"); document.getElementById("reschedNote").focus(); };
+  // Reschedule leads with the live slot picker when we know which event this
+  // is (the schedule page accepts the same event code); free text stays as the
+  // fallback for links minted before the picker existed.
+  if (eventId) {
+    var ps = document.getElementById("btnPickSlot");
+    ps.href = "https://thedomebros.com/schedule?e=" + encodeURIComponent(eventId) + (name ? "&n=" + encodeURIComponent(name) : "");
+    ps.style.display = "block";
+    document.getElementById("pickOr").style.display = "block";
+  }
+  document.getElementById("btnResched").onclick = function(){ hide("cancelBox"); show("reschedBox"); if(!eventId) document.getElementById("reschedNote").focus(); };
   document.getElementById("btnCancel").onclick = function(){ hide("reschedBox"); show("cancelBox"); };
 
   async function send(choice, note, okTitle, okMsg, icon){

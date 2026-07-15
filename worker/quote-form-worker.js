@@ -189,6 +189,26 @@ async function handleConfirm(request, env, origin) {
   return json({ success: true }, 200, origin);
 }
 
+// Relay the self-serve scheduler (open slots / propose a time) to the
+// messaging Worker, which owns the calendar math and appointment records.
+// The browser talks to this Worker; the shared secret rides on the relay.
+async function handleSchedule(request, env, origin, path) {
+  let d;
+  try { d = await request.json(); } catch { return json({ success: false, message: "Bad request" }, 400, origin); }
+  if (!env.MESSAGING_INGEST_SECRET) return json({ success: false, message: "Not configured" }, 500, origin);
+  try {
+    const r = await messagingFetch(env, "/api" + path, {
+      t: (d.t || "").toString().slice(0, 60),
+      e: (d.e || "").toString().slice(0, 200),
+      ...(d.start !== undefined ? { start: d.start } : {}),
+    });
+    const out = await r.json().catch(() => ({}));
+    return json({ success: r.ok, ...out }, r.ok ? 200 : (r.status || 502), origin);
+  } catch (e) {
+    return json({ success: false, error: "Couldn't reach the scheduler." }, 502, origin);
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -204,9 +224,14 @@ export default {
     }
 
     // Appointment confirmation responses (from /confirm on the site) come in as
-    // JSON on the /confirm path; everything else is a quote-form submission.
-    if ((new URL(request.url).pathname.replace(/\/+$/, "") || "/") === "/confirm") {
+    // JSON on the /confirm path; the scheduler pages use /schedule/*; everything
+    // else is a quote-form submission.
+    const reqPath = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
+    if (reqPath === "/confirm") {
       return handleConfirm(request, env, origin);
+    }
+    if (reqPath === "/schedule/slots" || reqPath === "/schedule/propose") {
+      return handleSchedule(request, env, origin, reqPath);
     }
 
     let form;
@@ -387,6 +412,7 @@ export default {
     // contact in the shared inbox with the right consent state. No-op until
     // MESSAGING_INGEST_URL + MESSAGING_INGEST_SECRET are set (i.e. after the
     // messaging app is deployed). Never blocks the submission.
+    let scheduleUrl = null;
     if (env.MESSAGING_INGEST_SECRET && (phone || email)) {
       // Drop the quote message + uploaded photos into the lead's thread in the app.
       const qf = new FormData();
@@ -394,14 +420,27 @@ export default {
       qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("address", address || "");
       qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
       for (const file of files) qf.append("attachments", file, file.name || "photo");
+      const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" };
       // Sequential on purpose: firing both at once raced to create the contact,
       // leaving two half-filled conversations in the inbox.
-      ctx.waitUntil((async () => {
-        await messagingFetch(env, "/api/ingest", { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" }).catch(() => {});
-        await messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {});
-      })());
+      if (isQuick) {
+        ctx.waitUntil((async () => {
+          await messagingFetch(env, "/api/ingest", ingestPayload).catch(() => {});
+          await messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {});
+        })());
+      } else {
+        // Full quotes await the fast JSON ingest so the success message can
+        // carry the lead's personal measuring-scheduler link; the heavy call
+        // (attachments) still runs in the background after it.
+        try {
+          const r = await messagingFetch(env, "/api/ingest", ingestPayload);
+          const out = await r.json().catch(() => ({}));
+          if (out && out.schedule_url) scheduleUrl = out.schedule_url;
+        } catch (e) { /* lead already emailed; the scheduling link is best-effort */ }
+        ctx.waitUntil(messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {}));
+      }
     }
 
-    return json({ success: true }, 200, origin);
+    return json({ success: true, ...(scheduleUrl ? { schedule_url: scheduleUrl } : {}) }, 200, origin);
   },
 };

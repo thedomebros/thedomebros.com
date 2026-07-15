@@ -114,6 +114,8 @@
           <div class="ic">&#10003;</div>
           <h2>Quote request sent</h2>
           <p>Thanks for reaching out to TheDomeBros. We've received your quote request and will review your pool details and get back to you soon.</p>
+          <a class="btn" id="schedBtn" href="#" style="display:none;margin-top:16px">Schedule your free measuring visit</a>
+          <p id="schedNote" style="display:none;font-size:13px;color:#5b6675;margin-top:8px">Pick from our open times &mdash; it's only a proposed time until we text you to confirm.</p>
         </div>
       </div>
     </div>
@@ -220,6 +222,12 @@
         if (response.ok && data.success) {
           if (window.gtag && data.lead !== false) gtag("event", "generate_lead", { form: "landing-quote" });
           if (window.fbq && data.lead !== false) fbq("track", "Lead");
+          if (data.schedule_url) {
+            const sb = document.getElementById("schedBtn");
+            sb.href = data.schedule_url;
+            sb.style.display = "inline-block";
+            document.getElementById("schedNote").style.display = "block";
+          }
           contactForm.classList.add("is-hidden");
           success.style.display = "block";
           success.scrollIntoView({ behavior: "smooth", block: "center" });
