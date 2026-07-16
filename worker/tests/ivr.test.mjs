@@ -33,7 +33,7 @@ function ctx() { const jobs = []; return { waitUntil(p) { jobs.push(Promise.reso
 
 const BASE = 'https://twilio-ivr.test.workers.dev';
 const env = {
-  SALES_CELLS: '+18017354578, +18014725872,+13852086150',
+  SALES_CELLS: '+13855550201, +13855550202,+13855550203',
   VM_SECRET: 'vm_secret_test',
   CALL_STATE: makeKV(),
 };
@@ -56,7 +56,7 @@ console.log('Menu:');
 
 console.log('Team call-through (dial-out):');
 {
-  const xml = await (await post('/voice', { From: '+18017354578', To: '+13852044760' })).text();
+  const xml = await (await post('/voice', { From: '+13855550201', To: '+13852044760' })).text();
   ok('team caller gets dial-out, not the menu', xml.includes('/voice/dialout') && !xml.includes('/voice/route'));
   calls.length = 0;
   const dxml = await (await post('/voice/dialout', { Digits: '8015551234', To: '+13852044760' })).text();
@@ -86,7 +86,7 @@ console.log('Routing digit 1 -> sequential ring (random order):');
   ok('no callerId override — customer number passes through', !xml.includes('callerId='));
   ok('leg is whisper-screened', xml.includes('/voice/whisper'));
   ok('dial action advances the sequence', xml.includes('/voice/seq') && xml.includes('i=1'));
-  ok('sequence carries the full shuffled order', xml.includes(encodeURIComponent('+18017354578')) || xml.includes('+18017354578'));
+  ok('sequence carries the full shuffled order', xml.includes(encodeURIComponent('+13855550201')) || xml.includes('+13855550201'));
   ok('call-event posted to messaging with secret', find('/api/call-event').some((c) => c.opts.headers['X-VM-Secret'] === 'vm_secret_test' && c.json.from === '+13855551001'));
   const firsts = new Set();
   for (let k = 0; k < 12; k++) {
@@ -117,9 +117,9 @@ console.log('QUOTE_FIRST_CELL (sales rep rings first on press 1):');
   }
   ok('press 1 always rings the rep first', repFirst);
   ok('press 2 never routes to the rep (not in SALES_CELLS)', svcRepFirst === 0);
-  const dup = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_qd', From: '+13855551002', To: '+13852044760' }, { ...env, QUOTE_FIRST_CELL: '+18017354578' })).text();
+  const dup = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_qd', From: '+13855551002', To: '+13852044760' }, { ...env, QUOTE_FIRST_CELL: '+13855550201' })).text();
   const order = decodeURIComponent((dup.match(/order=([^&"]+)/) || [])[1] || '');
-  ok('rep already in SALES_CELLS is not doubled', order.split(',').filter((c) => c === '+18017354578').length === 1 && order.split(',')[0] === '+18017354578');
+  ok('rep already in SALES_CELLS is not doubled', order.split(',').filter((c) => c === '+13855550201').length === 1 && order.split(',')[0] === '+13855550201');
   const only = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_qo', From: '+1x', To: '+1y' }, { SALES_CELLS: '', QUOTE_FIRST_CELL: '+13855559999', VM_SECRET: 'vm_secret_test', CALL_STATE: env.CALL_STATE })).text();
   ok('rep alone still rings with no team cells', only.includes('+13855559999'));
 }
