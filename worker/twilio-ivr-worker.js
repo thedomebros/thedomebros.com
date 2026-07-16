@@ -142,14 +142,8 @@ export default {
       const digit = (form.get("Digits") || "").toString();
 
       if (digit === "1" || digit === "2") {
-        const cells = (env.SALES_CELLS || "")
+        let cells = (env.SALES_CELLS || "")
           .split(",").map((s) => s.trim()).filter(Boolean);
-        if (cells.length === 0) {
-          return twiml(
-            say("Sorry, no one is available right now.") +
-            `<Redirect method="POST">/voice/voicemail</Redirect>`
-          );
-        }
 
         // Sequential ring, random order per call. One cell at a time in a plain
         // <Dial> forwards the CUSTOMER'S real caller ID to the cell (an API-placed
@@ -159,6 +153,19 @@ export default {
         for (let i = cells.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [cells[i], cells[j]] = [cells[j], cells[i]];
+        }
+
+        // New-quote calls (press 1) always ring the sales rep first — the
+        // QUOTE_FIRST_CELL var (dashboard) pins that number to the front and
+        // the team shuffles in behind. Service calls (press 2) are unchanged.
+        const first = (env.QUOTE_FIRST_CELL || "").trim();
+        if (digit === "1" && first) cells = [first, ...cells.filter((c) => c !== first)];
+
+        if (cells.length === 0) {
+          return twiml(
+            say("Sorry, no one is available right now.") +
+            `<Redirect method="POST">/voice/voicemail</Redirect>`
+          );
         }
 
         // Tell the messaging app about the incoming call (call log entry).

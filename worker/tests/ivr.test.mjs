@@ -103,6 +103,27 @@ console.log('Routing with no cells:');
   ok('no cells -> apology + voicemail', xml.includes('no one is available') && xml.includes('/voice/voicemail'));
 }
 
+console.log('QUOTE_FIRST_CELL (sales rep rings first on press 1):');
+{
+  const repEnv = { ...env, QUOTE_FIRST_CELL: '+13855559999' };
+  let repFirst = true, svcRepFirst = 0;
+  for (let k = 0; k < 8; k++) {
+    const x1 = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_q' + k, From: '+13855551002', To: '+13852044760' }, repEnv)).text();
+    const m1 = x1.match(/<Number[^>]*>(\+\d+)<\/Number>/);
+    if (!m1 || m1[1] !== '+13855559999') repFirst = false;
+    const x2 = await (await post('/voice/route', { Digits: '2', CallSid: 'CA_s' + k, From: '+13855551002', To: '+13852044760' }, repEnv)).text();
+    const m2 = x2.match(/<Number[^>]*>(\+\d+)<\/Number>/);
+    if (m2 && m2[1] === '+13855559999') svcRepFirst++;
+  }
+  ok('press 1 always rings the rep first', repFirst);
+  ok('press 2 never routes to the rep (not in SALES_CELLS)', svcRepFirst === 0);
+  const dup = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_qd', From: '+13855551002', To: '+13852044760' }, { ...env, QUOTE_FIRST_CELL: '+18017354578' })).text();
+  const order = decodeURIComponent((dup.match(/order=([^&"]+)/) || [])[1] || '');
+  ok('rep already in SALES_CELLS is not doubled', order.split(',').filter((c) => c === '+18017354578').length === 1 && order.split(',')[0] === '+18017354578');
+  const only = await (await post('/voice/route', { Digits: '1', CallSid: 'CA_qo', From: '+1x', To: '+1y' }, { SALES_CELLS: '', QUOTE_FIRST_CELL: '+13855559999', VM_SECRET: 'vm_secret_test', CALL_STATE: env.CALL_STATE })).text();
+  ok('rep alone still rings with no team cells', only.includes('+13855559999'));
+}
+
 console.log('Sequential progression (/voice/seq):');
 {
   const order = encodeURIComponent('+18011111111,+18022222222,+18033333333');
