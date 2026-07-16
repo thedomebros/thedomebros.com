@@ -61,10 +61,17 @@
         <form id="quickForm" class="quickcap" style="margin-top:22px">
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
           <input type="text" name="contact" placeholder="Email or phone number" aria-label="Your email address or phone number" required />
-          <label class="smsconsent" style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:8px 0;font-weight:400;text-align:left">
-            <input name="sms_consent" type="checkbox" value="yes" style="flex:0 0 auto;width:auto;margin:3px 0 0" />
-            <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)"><strong>I agree to receive text messages from TheDomeBros LLC</strong> about my quote, scheduling, and service. Message frequency varies. Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. <a href="/privacy">Privacy Policy</a> &middot; <a href="/terms">Terms</a></span>
-          </label>
+          <fieldset class="smsconsent" style="border:0;padding:0;margin:8px 0;width:100%;text-align:left">
+            <legend style="padding:0;font-size:12.5px;font-weight:700;color:var(--mut);margin:0 0 6px">Can we text you? <span style="font-weight:400">(choose one)</span></legend>
+            <label style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:0 0 6px;font-weight:400">
+              <input name="sms_consent" type="radio" value="yes" required style="flex:0 0 auto;width:auto;margin:3px 0 0" />
+              <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)"><strong>Yes &mdash; I agree to receive text messages from TheDomeBros LLC</strong> about my quote, scheduling, and service. Message frequency varies. Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. <a href="/privacy">Privacy Policy</a> &middot; <a href="/terms">Terms</a></span>
+            </label>
+            <label style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:0;font-weight:400">
+              <input name="sms_consent" type="radio" value="no" style="flex:0 0 auto;width:auto;margin:3px 0 0" />
+              <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)">No &mdash; contact me by phone call or email only.</span>
+            </label>
+          </fieldset>
           <div class="cf-turnstile" data-sitekey="0x4AAAAAADrG9JwlvW23GBfe"></div>
           <button class="btn" type="submit" id="quickButton">See how it works</button>
         </form>
@@ -100,10 +107,17 @@
           <input id="attachments" name="attachments" type="file" accept="image/*,.pdf,.heic" multiple />
           <div class="note" style="margin-top:8px;text-align:left">Up to 6 files, 20 MB total.</div>
 
-          <label class="smsconsent" style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:8px 0;font-weight:400;text-align:left">
-            <input name="sms_consent" type="checkbox" value="yes" style="flex:0 0 auto;width:auto;margin:3px 0 0" />
-            <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)"><strong>I agree to receive text messages from TheDomeBros LLC</strong> about my quote, scheduling, and service. Message frequency varies. Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. <a href="/privacy">Privacy Policy</a> &middot; <a href="/terms">Terms</a></span>
-          </label>
+          <fieldset class="smsconsent" style="border:0;padding:0;margin:8px 0;width:100%;text-align:left">
+            <legend style="padding:0;font-size:12.5px;font-weight:700;color:var(--mut);margin:0 0 6px">Can we text you? <span style="font-weight:400">(choose one)</span></legend>
+            <label style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:0 0 6px;font-weight:400">
+              <input name="sms_consent" type="radio" value="yes" required style="flex:0 0 auto;width:auto;margin:3px 0 0" />
+              <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)"><strong>Yes &mdash; I agree to receive text messages from TheDomeBros LLC</strong> about my quote, scheduling, and service. Message frequency varies. Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. <a href="/privacy">Privacy Policy</a> &middot; <a href="/terms">Terms</a></span>
+            </label>
+            <label style="display:flex;width:100%;gap:8px;align-items:flex-start;margin:0;font-weight:400">
+              <input name="sms_consent" type="radio" value="no" style="flex:0 0 auto;width:auto;margin:3px 0 0" />
+              <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:1.45;color:var(--mut)">No &mdash; contact me by phone call or email only.</span>
+            </label>
+          </fieldset>
 
           <div class="cf-turnstile" data-sitekey="0x4AAAAAADrG9JwlvW23GBfe"></div>
           <button class="btn" id="submitButton" type="submit">Request my free quote</button>
