@@ -80,6 +80,7 @@
         </ul>
         <form id="quickForm" class="quickcap" style="margin-top:22px">
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
+          <input type="hidden" name="ref" class="reffield" value="" />
           <input type="text" name="contact" placeholder="Email or phone number" aria-label="Your email address or phone number" required />
           <fieldset class="smsconsent" style="border:0;padding:0;margin:8px 0;width:100%;text-align:left">
             <legend style="padding:0;font-size:12.5px;font-weight:700;color:var(--mut);margin:0 0 6px">Can we text you? <span style="font-weight:400">(choose one)</span></legend>
@@ -103,6 +104,7 @@
           <h2 style="font-size:24px;margin-bottom:6px">Get your free quote</h2>
           <p class="note" style="text-align:left;margin:0 0 4px">We respond quickly.</p>
           <input type="hidden" name="source" value="pricing" />
+          <input type="hidden" name="ref" class="reffield" value="" />
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
 
           <label for="name">Full name</label>
@@ -163,6 +165,14 @@
   </div></footer>
 
   <script>
+    // Referral attribution: a partner's link carries ?ref=<slug>. Drop it into
+    // the hidden field on every form so a referred lead arrives already tagged.
+    (function () {
+      var ref = new URLSearchParams(location.search).get("ref");
+      if (!ref) return;
+      ref = ref.replace(/[^a-zA-Z0-9 _-]/g, "").slice(0, 40);
+      document.querySelectorAll(".reffield").forEach(function (el) { el.value = ref; });
+    })();
     const quickForm = document.getElementById("quickForm");
     const quickField = quickForm.elements["contact"];
     quickField.addEventListener("input", () => quickField.setCustomValidity(""));

@@ -258,6 +258,9 @@ export default {
     const message = (form.get("message") || "").toString().trim();
     const _src = (form.get("source") || "").toString().trim().toLowerCase();
     const source = /^[a-z-]{1,20}$/.test(_src) ? _src : "site";
+    // Referral partner slug from a ?ref= link, passed through to the app which
+    // maps it to a partner. Kept loose (slug or name); the app normalizes it.
+    const ref = (form.get("ref") || "").toString().trim().replace(/[^a-zA-Z0-9 _-]/g, "").slice(0, 40);
     // Whether the lead ticked the SMS-consent box (both forms send it via FormData).
     const smsConsent = (form.get("sms_consent") || "").toString().trim().toLowerCase() === "yes";
 
@@ -419,8 +422,9 @@ export default {
       qf.set("phone", phone || ""); qf.set("email", email || ""); qf.set("name", name || "");
       qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("address", address || "");
       qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
+      if (ref) qf.set("ref", ref);
       for (const file of files) qf.append("attachments", file, file.name || "photo");
-      const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown" };
+      const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown", ...(ref ? { ref } : {}) };
       // Sequential on purpose: firing both at once raced to create the contact,
       // leaving two half-filled conversations in the inbox.
       if (isQuick) {
