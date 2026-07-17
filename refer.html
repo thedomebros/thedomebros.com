@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Refer a homeowner | TheDomeBros</title>
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-domebros.png" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--cream:#f6f4ef;--card:#fffdf8;--ink:#1f2a37;--mut:#5b6675;--navy:#1f3b73;--navy-d:#162a52;--navy2:#3a5fa8;--line:#e4ddcf;--err:#b3261e;--ok:#1f6b4a}
+  *{box-sizing:border-box}html,body{margin:0;overflow-x:hidden}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:24px 18px calc(24px + env(safe-area-inset-bottom,0))}
+  h1,h2,h3,.brand,.btn{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em}
+  .brand{font-weight:800;font-size:22px;color:var(--navy);text-decoration:none;margin:8px 0 22px;display:inline-block}
+  .card{width:100%;max-width:460px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 24px;box-shadow:0 4px 20px rgba(31,42,55,.06)}
+  .pill{display:inline-block;background:#e7ecf7;border:1px solid #d4ddf0;color:var(--navy);font-weight:700;font-size:12px;padding:5px 13px;border-radius:999px;margin-bottom:12px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:14px;margin:0 0 16px}
+  label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em}
+  input[type=text],input[type=tel],input[type=email],textarea{width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  input:focus,textarea:focus{outline:none;border-color:var(--navy2)}
+  textarea{resize:vertical;min-height:70px}
+  .hint{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+  .consent{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink);margin-top:16px}
+  .consent input{width:19px;height:19px;margin-top:2px;flex:0 0 auto}
+  .btn{display:block;width:100%;text-align:center;border:0;border-radius:999px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;margin-top:18px}
+  .btn:hover{background:var(--navy-d)}
+  .btn:disabled{opacity:.5}
+  .err{display:none;color:var(--err);font-size:14px;text-align:center;margin-top:12px}
+  .loading{color:var(--mut);text-align:center;padding:40px 0;font-size:14px}
+  .done{display:none;text-align:center}.done.open{display:block}
+  .done .ic{width:64px;height:64px;border-radius:50%;background:var(--navy);color:#fff;font-size:34px;line-height:64px;margin:0 auto 16px}
+  .done h2{font-size:22px;margin:0 0 6px}.done p{color:var(--mut);margin:0}
+  .foot{color:var(--mut);font-size:12px;margin-top:18px;text-align:center}
+  .foot a{color:var(--navy2)}
+</style>
+</head>
+<body>
+  <a class="brand" href="https://thedomebros.com">TheDomeBros</a>
+  <div class="card">
+    <div class="loading" id="loading">Loading&hellip;</div>
+
+    <div id="form" style="display:none">
+      <span class="pill" id="who">Referral partner</span>
+      <h1>Refer a homeowner</h1>
+      <p class="sub">Send us someone who'd love a year-round pool. We take it from here, and you get credit when they install.</p>
+
+      <label>Homeowner name <span style="color:var(--err)">*</span></label>
+      <input type="text" id="fName" autocomplete="off" placeholder="First and last"/>
+      <label>Phone</label>
+      <input type="tel" id="fPhone" autocomplete="off" placeholder="(801) 555-1234"/>
+      <label>Email</label>
+      <input type="email" id="fEmail" autocomplete="off"/>
+      <p class="hint">A phone or an email — at least one so we can reach them.</p>
+      <label>Address <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="text" id="fAddr" autocomplete="off" placeholder="Street or city"/>
+      <label>Pool size <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="text" id="fPool" autocomplete="off" placeholder="e.g. 16 x 32"/>
+      <label>Note <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea id="fNote" placeholder="e.g. wants to swim through winter, ready to move fast"></textarea>
+      <div class="consent"><input type="checkbox" id="fConsent"/><span><b>They said it's OK for TheDomeBros to contact them.</b> Please ask first — we only reach out to homeowners who agreed.</span></div>
+
+      <button class="btn" id="sendBtn" type="button">Send referral to TheDomeBros</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="done" id="done">
+      <div class="ic">&#10003;</div>
+      <h2>Referral sent!</h2>
+      <p>Thanks — we'll reach out to them and keep you posted. Send another any time.</p>
+      <button class="btn" id="againBtn" type="button" style="max-width:260px;margin:18px auto 0">Refer someone else</button>
+    </div>
+  </div>
+  <p class="foot">TheDomeBros &middot; Utah County &middot; <a href="tel:+13852044760">(385) 204-4760</a></p>
+
+<script>
+  var WORKER = "https://quote-form.thedomebros-com.workers.dev";
+  var TOKEN = (new URLSearchParams(location.search).get("t") || "").slice(0, 80);
+  function el(id){ return document.getElementById(id); }
+
+  async function post(path, body){
+    var res = await fetch(WORKER + path, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    var out = await res.json().catch(function(){ return {}; });
+    out._status = res.status;
+    return out;
+  }
+
+  (async function(){
+    if(!TOKEN){ el("loading").textContent = "This referral link isn't valid. Ask TheDomeBros for your link."; return; }
+    try{
+      var out = await post("/refer/me", { t: TOKEN });
+      if(out && out.ok){ el("who").textContent = out.partner; el("loading").style.display="none"; el("form").style.display="block"; }
+      else { el("loading").textContent = "This referral link isn't valid or has expired. Ask TheDomeBros for a new one."; }
+    }catch(e){ el("loading").textContent = "Couldn't load — please try again, or text us at (385) 204-4760."; }
+  })();
+
+  function fail(msg){ el("err").textContent = msg; el("err").style.display = "block"; }
+
+  el("sendBtn").onclick = async function(){
+    var name = el("fName").value.trim(), phone = el("fPhone").value.trim(), email = el("fEmail").value.trim();
+    el("err").style.display = "none";
+    if(!name){ fail("Their name is required."); el("fName").focus(); return; }
+    if(!phone && !email){ fail("Add a phone or an email so we can reach them."); el("fPhone").focus(); return; }
+    if(!el("fConsent").checked){ fail("Please confirm they're OK with us contacting them."); return; }
+    var b = this; b.disabled = true; b.textContent = "Sending…";
+    try{
+      var out = await post("/refer/lead", { t: TOKEN, name: name, phone: phone, email: email,
+        address: el("fAddr").value.trim(), pool_size: el("fPool").value.trim(), note: el("fNote").value.trim(),
+        consent: el("fConsent").checked ? "yes" : "no" });
+      if(out && out.ok){ el("form").style.display = "none"; el("done").classList.add("open"); return; }
+      fail(out.error || "Something went wrong — text us at (385) 204-4760 instead.");
+      b.disabled = false; b.textContent = "Send referral to TheDomeBros";
+    }catch(e){
+      fail("Something went wrong — text us at (385) 204-4760 instead.");
+      b.disabled = false; b.textContent = "Send referral to TheDomeBros";
+    }
+  };
+  el("againBtn").onclick = function(){
+    ["fName","fPhone","fEmail","fAddr","fPool","fNote"].forEach(function(id){ el(id).value = ""; });
+    el("fConsent").checked = false; el("err").style.display = "none";
+    el("done").classList.remove("open"); el("form").style.display = "block";
+  };
+</script>
+</body>
+</html>

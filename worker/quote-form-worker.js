@@ -209,6 +209,26 @@ async function handleSchedule(request, env, origin, path) {
   }
 }
 
+// Relay the referral partner submission page (thedomebros.com/refer) to the
+// messaging Worker, which owns the partner tokens and the lead records. The
+// browser talks to this Worker; the shared secret rides on the relay.
+async function handleRefer(request, env, origin, path) {
+  let d;
+  try { d = await request.json(); } catch { return json({ success: false, message: "Bad request" }, 400, origin); }
+  if (!env.MESSAGING_INGEST_SECRET) return json({ success: false, message: "Not configured" }, 500, origin);
+  const s = (k, n) => (d[k] || "").toString().slice(0, n);
+  try {
+    const r = await messagingFetch(env, "/api" + path, {
+      t: s("t", 80), name: s("name", 120), phone: s("phone", 40), email: s("email", 120),
+      address: s("address", 200), pool_size: s("pool_size", 60), note: s("note", 1000), consent: s("consent", 10),
+    });
+    const out = await r.json().catch(() => ({}));
+    return json({ success: r.ok, ...out }, r.ok ? 200 : (r.status || 502), origin);
+  } catch (e) {
+    return json({ success: false, error: "Couldn't reach TheDomeBros." }, 502, origin);
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -229,6 +249,9 @@ export default {
     const reqPath = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
     if (reqPath === "/confirm") {
       return handleConfirm(request, env, origin);
+    }
+    if (reqPath === "/refer/me" || reqPath === "/refer/lead") {
+      return handleRefer(request, env, origin, reqPath);
     }
     if (reqPath === "/schedule/slots" || reqPath === "/schedule/propose") {
       return handleSchedule(request, env, origin, reqPath);
