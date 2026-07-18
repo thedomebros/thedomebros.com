@@ -386,6 +386,10 @@ export default {
     const fileNote = attachments.length
       ? `<p><strong>Attachments:</strong> ${attachments.length} file(s)</p>`
       : "";
+    // The auto-reply is deferred so the full-form path can wait for the
+    // lead's personal scheduling link (from the messaging ingest) and put it
+    // in the confirmation email. Quick captures still send immediately.
+    let autoReply = null, autoReplySent = false;
 
     try {
       // 1) Lead to the business (includes any uploaded files).
@@ -422,7 +426,7 @@ export default {
       //    Runs in the background (waitUntil) so the visitor isn't kept
       //    waiting on a second email send; the lead email above is the one
       //    that must succeed before we report success.
-      if (email) ctx.waitUntil(sendEmail(env.RESEND_API_KEY, {
+      autoReply = (schedUrl) => sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [email],
         subject: isQuick
@@ -450,8 +454,12 @@ export default {
             `<p>Thanks for reaching out to TheDomeBros. We've received your quote ` +
             `request and will review your pool details and get back to you soon.</p>` +
             `<p><strong>What you sent us:</strong></p>${leadHtml}${fileNote}` +
+            (schedUrl
+              ? `<p><strong>Ready when you are:</strong> <a href="${schedUrl}">pick a time for your free measuring visit</a> — it only takes a minute.</p>`
+              : ``) +
             `<p>— TheDomeBros</p>`),
-      }).catch(() => {}));
+      }).catch(() => {});
+      if (email && isQuick) { ctx.waitUntil(autoReply(null)); autoReplySent = true; }
     } catch (err) {
       return json({ success: false, message: "Could not send. Please email us directly." }, 502, origin);
     }
@@ -498,10 +506,12 @@ export default {
           const out = await r.json().catch(() => ({}));
           if (out && out.schedule_url) scheduleUrl = out.schedule_url;
         } catch (e) { /* lead already emailed; the scheduling link is best-effort */ }
+        if (email && autoReply && !autoReplySent) { ctx.waitUntil(autoReply(scheduleUrl)); autoReplySent = true; }
         ctx.waitUntil(messagingFetchForm(env, "/api/ingest-quote", qf).catch(() => {}));
       }
     }
 
+    if (email && autoReply && !autoReplySent) ctx.waitUntil(autoReply(null));
     return json({ success: true, ...(scheduleUrl ? { schedule_url: scheduleUrl } : {}) }, 200, origin);
   },
 };
