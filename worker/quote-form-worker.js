@@ -229,6 +229,32 @@ async function handleRefer(request, env, origin, path) {
   }
 }
 
+// Turn the raw ad identifiers captured on the landing page into a readable
+// "where did this lead come from" label. gclid only ever rides a Google Ads
+// click; fbclid comes from Facebook/Instagram. utm_source names the platform
+// when tagged; otherwise we fall back to the referrer. Campaign name is
+// appended when present. Exported for tests.
+export function deriveAdSource(a) {
+  if (!a || typeof a !== "object") return "";
+  const s = (a.utm_source || "").toLowerCase().trim();
+  const med = (a.utm_medium || "").toLowerCase().trim();
+  const paid = ["cpc", "ppc", "paid", "paidsearch", "paid_social", "paid-social"].includes(med);
+  let label = "";
+  if (a.gclid || s === "googleads" || s === "google-ads" || s === "adwords" || (s === "google" && paid)) label = "Google Ads";
+  else if (a.fbclid || ["facebook", "fb", "instagram", "ig", "meta"].includes(s)) label = paid || a.fbclid ? "Meta Ads" : "Meta";
+  else if (s === "google") label = "Google (organic)";
+  else if (s) label = a.utm_source;
+  else {
+    const ref = (a.referrer || "").toLowerCase();
+    if (/(^|\/\/|\.)google\./.test(ref)) label = "Google (organic)";
+    else if (/(facebook|instagram|fbcdn|fb\.me|l\.facebook|lm\.facebook)/.test(ref)) label = "Meta (organic)";
+    else if (ref) { try { label = "Referral: " + new URL(a.referrer).hostname.replace(/^www\./, ""); } catch (e) { label = "Referral"; } }
+    else label = "Direct";
+  }
+  const camp = (a.utm_campaign || "").trim();
+  return camp ? `${label} (${camp})` : label;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -284,6 +310,13 @@ export default {
     // Referral partner slug from a ?ref= link, passed through to the app which
     // maps it to a partner. Kept loose (slug or name); the app normalizes it.
     const ref = (form.get("ref") || "").toString().trim().replace(/[^a-zA-Z0-9 _-]/g, "").slice(0, 40);
+    // Ad attribution captured on the landing page (JSON of utm/gclid/fbclid/
+    // referrer) → a readable "Google Ads / Meta Ads / Direct" label.
+    let attribution = "";
+    try {
+      const raw = (form.get("attribution") || "").toString();
+      if (raw) attribution = deriveAdSource(JSON.parse(raw)).slice(0, 120);
+    } catch (e) { /* malformed attribution never blocks a lead */ }
     // Whether the lead ticked the SMS-consent box (both forms send it via FormData).
     const smsConsent = (form.get("sms_consent") || "").toString().trim().toLowerCase() === "yes";
 
@@ -344,6 +377,7 @@ export default {
     const rows = isQuick
       ? Object.fromEntries([["Email", email], ["Phone", phone]].filter(([, v]) => v))
       : { Name: name, Email: email, Phone: phone, "Pool size": poolSize, Address: address, Message: message };
+    if (attribution) rows["Lead source"] = attribution;
     // Surface SMS consent so you know who you can text vs. who needs verbal consent first.
     if (phone) rows["Texts OK?"] = smsConsent ? "YES — opted in on the form" : "NO — get verbal consent before texting";
     const leadHtml = Object.entries(rows)
@@ -447,7 +481,7 @@ export default {
       qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
       if (ref) qf.set("ref", ref);
       for (const file of files) qf.append("attachments", file, file.name || "photo");
-      const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown", ...(ref ? { ref } : {}) };
+      const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown", ...(ref ? { ref } : {}), ...(attribution ? { attribution } : {}) };
       // Sequential on purpose: firing both at once raced to create the contact,
       // leaving two half-filled conversations in the inbox.
       if (isQuick) {

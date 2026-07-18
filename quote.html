@@ -61,6 +61,7 @@
         <form id="quickForm" class="quickcap" style="margin-top:22px">
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
           <input type="hidden" name="ref" class="reffield" value="" />
+          <input type="hidden" name="attribution" class="attrfield" value="" />
           <input type="text" name="contact" placeholder="Email or phone number" aria-label="Your email address or phone number" required />
           <fieldset class="smsconsent" style="border:0;padding:0;margin:8px 0;width:100%;text-align:left">
             <legend style="padding:0;font-size:12.5px;font-weight:700;color:var(--mut);margin:0 0 6px">Can we text you? <span style="font-weight:400">(choose one)</span></legend>
@@ -85,6 +86,7 @@
           <p class="note" style="text-align:left;margin:0 0 4px">We respond quickly.</p>
           <input type="hidden" name="source" value="landing" />
           <input type="hidden" name="ref" class="reffield" value="" />
+          <input type="hidden" name="attribution" class="attrfield" value="" />
           <input type="checkbox" class="hp" name="botcheck" tabindex="-1" autocomplete="off" />
 
           <label for="name">Full name</label>
@@ -169,6 +171,28 @@
       if (!ref) return;
       ref = ref.replace(/[^a-zA-Z0-9 _-]/g, "").slice(0, 40);
       document.querySelectorAll(".reffield").forEach(function (el) { el.value = ref; });
+    })();
+    // Ad attribution: capture the ad identifiers from the landing URL (and
+    // referrer) so a lead records whether it came from Google, Meta, etc. An ad
+    // click (gclid/fbclid/utm) always wins and is remembered across the visit;
+    // otherwise a first referrer is kept. The worker turns it into a label.
+    (function () {
+      var KEY = "db_attr";
+      var p = new URLSearchParams(location.search);
+      var cur = {
+        utm_source: p.get("utm_source") || "", utm_medium: p.get("utm_medium") || "",
+        utm_campaign: p.get("utm_campaign") || "",
+        gclid: p.get("gclid") || "", fbclid: p.get("fbclid") || "",
+        referrer: document.referrer || ""
+      };
+      var hasAd = cur.utm_source || cur.gclid || cur.fbclid;
+      var stored = null;
+      try { stored = localStorage.getItem(KEY); } catch (e) {}
+      if (hasAd || (!stored && cur.referrer)) {
+        stored = JSON.stringify(cur);
+        try { localStorage.setItem(KEY, stored); } catch (e) {}
+      }
+      if (stored) document.querySelectorAll(".attrfield").forEach(function (el) { el.value = stored; });
     })();
     const quickForm = document.getElementById("quickForm");
     const quickField = quickForm.elements["contact"];
