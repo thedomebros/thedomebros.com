@@ -138,6 +138,7 @@ footer a{color:var(--mut);text-decoration:none}
 footer a:hover{color:var(--navy)}
 
 footer .areas{max-width:1240px;margin:0 auto;padding:18px 6vw 0;font-size:13px;color:var(--mut);text-align:center;line-height:1.7}
+footer .lic{max-width:1240px;margin:0 auto;padding:16px 6vw 0;font-size:13.5px;font-weight:700;color:var(--navy);text-align:center;letter-spacing:.01em}
 
 @media(max-width:860px){
   .heroin{grid-template-columns:1fr;gap:28px;padding:44px 7vw}
