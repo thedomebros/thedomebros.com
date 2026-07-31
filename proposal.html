@@ -83,20 +83,26 @@ var WORKER = "https://quote-form.thedomebros-com.workers.dev";
 var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
 var money = function(n){ return "$" + Math.round(n).toLocaleString("en-US"); };
+// The caption is just there to say "this is your place" — the postcode adds
+// nothing and makes it read like a database record.
+function streetOf(a){
+  return String(a || "").replace(/\s*\d{5}(-\d{4})?\s*$/, "").replace(/[,\s]+$/, "").trim();
+}
 
 function render(d){
   var h = "";
 
-  // Their dome, on their property — the whole reason this page works.
-  if (d.render){
-    h += '<div class="hero"><img src="'+esc(d.render)+'" alt="Your pool dome, shown on your property" />'
-      +  '<div class="herocap">Your dome, rendered on your property'
-      +  (d.address ? " &middot; " + esc(d.address) : "") + '.</div></div>';
-  }
-
   h += '<div class="card"><span class="pill">Your proposal</span>'
     +  '<h1>'+(d.name ? esc(String(d.name).split(" ")[0]) + "’s pool dome" : "Your pool dome")+'</h1>'
     +  '<p class="sub">Everything in one place while you think it over. Nothing here expires — take your time.</p></div>';
+
+  // Their dome, on their property — the whole reason this page works. Sits under
+  // their name, so the page opens by saying who it's for and then showing them.
+  if (d.render){
+    h += '<div class="hero"><img src="'+esc(d.render)+'" alt="Your pool dome, shown on your property" />'
+      +  '<div class="herocap">Your dome, rendered on your property'
+      +  (streetOf(d.address) ? " &middot; " + esc(streetOf(d.address)) : "") + '.</div></div>';
+  }
 
   // Configuration
   var rows = [];
