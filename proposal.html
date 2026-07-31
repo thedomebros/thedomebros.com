@@ -102,19 +102,22 @@
   @media(min-width:900px){
     .wrap{max-width:1080px;padding:0 28px}
     .brand{font-size:24px;margin:28px 0 20px}
-    .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:22px}
-    .layout > .card{grid-column:1}
-    /* Span every row rather than sit in one: as a single-row item the column
-       below it was dead space, and sticky had no height to travel through so it
-       scrolled away. (span 99 rather than 1/-1 — the latter doesn't reach
-       implicit rows.) */
-    .layout > .side{grid-column:2;grid-row:1/span 99;align-self:start;position:sticky;top:20px}
+    /* No sidebar. A narrow column holding two short cards next to a very long
+       one leaves a dead strip down the whole page whatever sticky does — so the
+       cards run full width and use the space INSIDE themselves instead. */
+    .layout{display:block}
+    .side{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;align-items:start}
+    /* Lists that were one long thin ribbon now fill the card. */
+    .wins{columns:2;column-gap:30px}
+    .wins li{break-inside:avoid;padding-bottom:15px}
+    .steps{columns:2;column-gap:30px}
+    .steps li{break-inside:avoid}
     h1{font-size:30px}
     .hero img{max-height:460px;object-fit:cover}
     /* Room to show them all at once — no scrolling to discover the rest. */
     .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;overflow:visible}
     .gal figure{flex:none}
-    .gal img{height:150px}
+    .gal img{height:196px}
     /* Two columns of trade-offs reads better than one long list out here. */
     .real dl{columns:2;column-gap:26px}
     .real dt{break-after:avoid}
@@ -125,8 +128,8 @@
     .intro{background:transparent;border:0;box-shadow:none;padding:0 2px;margin-bottom:14px}
     /* Full-bleed buttons across 1080px look like a mistake. */
     .btn{max-width:400px;margin-left:auto;margin-right:auto}
-    /* Long measures are hard to read — hold the prose to a sane line length. */
-    .wins li span,.steps li span,details p{max-width:62ch}
+    /* The columns above already hold the measure; only the FAQ runs full width. */
+    details p{max-width:74ch}
   }
   @media print{
     body{background:#fff}
