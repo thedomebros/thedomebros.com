@@ -173,15 +173,12 @@ function render(d){
 
   // What actually changes for them. Concrete scenes, not adjectives.
   h += '<div class="card"><h2>What changes</h2><ul class="wins">'
-    +  '<li><b>You swim in January</b><span>Same water, same yard — it just stops sitting unused the moment the weather turns.</span></li>'
-    +  '<li><b>The kids actually use it</b><span>Swim practice, birthdays, a Tuesday after school — in the middle of winter.</span></li>'
-    +  '<li><b>Your pool stays clean</b><span>Leaves, dust and storm debris stay outside. Less skimming, less vacuuming, fewer chemicals chasing what blew in.</span></li>'
-    +  '<li><b>Heat stays in the water</b><span>An open pool loses most of its heat to evaporation overnight. Covering it keeps the warmth — and the water — where you put it.</span></li>'
-    +  '<li><b>It’s bright inside</b><span>A clear window band runs the whole way around, so it feels like a sunroom rather than a tent.</span></li>'
-    +  '<li><b>Warm the moment you step out</b><span>Inside stays warm and humid, so getting out of the water doesn’t mean getting cold. It feels closer to a resort pool than a backyard one.</span></li>'
-    +  '<li><b>Summer is still summer</b><span>It comes down when the weather turns, so you get an open-air pool all summer and a warm one all winter. You’re not choosing between them.</span></li>'
-    +  '<li><b>Quieter than people expect</b><span>The blower isn’t running non-stop. It cycles on periodically to keep the pressure up, then shuts off again — so it isn’t a constant fan noise in the yard.</span></li>'
-    +  '<li><b>Nothing gets built</b><span>Air holds it up — no posts, no footings, no permits for a permanent structure, nothing bolted through your deck.</span></li>'
+    +  '<li><b>You swim in January</b><span>Same water, same yard. It just stops sitting unused the moment the weather turns.</span></li>'
+    +  '<li><b>The kids actually use it</b><span>Swim practice, birthdays, a Tuesday after school \u2014 in the middle of winter.</span></li>'
+    +  '<li><b>Warm the moment you step out</b><span>It stays warm and bright inside, so getting out of the water doesn\u2019t mean getting cold.</span></li>'
+    +  '<li><b>Summer is still summer</b><span>It comes down in the spring. You get an open-air pool and a warm one \u2014 not a choice between them.</span></li>'
+    +  '<li><b>Your pool stays clean</b><span>Leaves, dust and storm debris stay outside. Less skimming, fewer chemicals.</span></li>'
+    +  '<li><b>You\u2019re not the one looking after it</b><span>We put it up, take it down, store it, and fix what wears out.</span></li>'
     +  '</ul></div>';
 
   // Configuration
@@ -218,8 +215,10 @@ function render(d){
     +  '<p class="lead">Things we’d rather you hear from us than find out in January.</p><dl>'
     +  '<dt>It’s big, and your neighbors will notice</dt>'
     +  '<dd>It covers your pool and stands well above it. If you’re in an HOA, check the rules before you sign — we’d rather lose the sale than have you fight that fight afterwards.</dd>'
-    +  '<dt>It’s seasonal work, not a one-off</dt>'
-    +  '<dd>It goes up in the fall and comes down in the spring. That’s a job each way — we handle it, but it’s a date in the calendar and a cost to plan for, every year.</dd>'
+    +  '<dt>Your pool equipment stays outside</dt>'
+    +  '<dd>The pump and plumbing can’t go under the dome — too noisy — so they stay out in the cold. Things can break down out there over a hard winter. If that happens, we can take care of it.</dd>'
+    +  '<dt>Zippers are a wear item</dt>'
+    +  '<dd>The zipper is deliberately the weakest part of the dome — if something has to give, better it’s that than the vinyl. It wears with use and gets replaced eventually; we handle the swap.</dd>'
     +  '</dl></div>';
 
   // What happens next
@@ -249,10 +248,28 @@ function render(d){
 
   // FAQ — the questions that stall a decision.
   h += '<div class="card"><h2>Common questions</h2>'
-    +  faq("Will it hold up to snow and wind?", "Air-supported domes are built for winters like ours — the air pressure inside is what carries snow and wind load, rather than a frame.")
-    +  faq("How long does it last?", "With normal seasonal care, these are a multi-season investment. Your agreement covers the manufacturer’s warranty, which we administer for you.")
-    +  faq("Do you take it down in the summer?", "Yes — we offer seasonal removal, storage and reinstallation as a separate service so you get an open pool in summer and a warm one in winter.")
-    +  faq("What if I change my mind?", "You have three business days after signing to cancel, in writing, for a full refund of anything paid.")
+    +  faq("What's it like inside?",
+          "Roomier than it looks. Walls stand about 6 feet and the middle comes up to 12\u201314 feet on a typical dome, so you're walking around under it rather than stooping. A clear window band runs the whole way around, so it reads more like a sunroom than a tent.")
+    +  faq("Do we have to leave it up all winter?",
+          "No \u2014 you don't have to leave it inflated at all. Plenty of owners switch the blower on about thirty minutes before they swim, and off again afterwards. Either way the pool never gets winterized and buried for six months.")
+    +  faq("What if the power goes out while we're in there?",
+          "It comes down gradually, never suddenly. A typical residential dome takes 15\u201320 minutes to settle far enough that you'd want to step out \u2014 there's plenty of time to walk out, and it re-inflates in about half an hour once the power is back.")
+    +  faq("Won't it blow away?",
+          "It's designed to handle a typical windstorm, and owners regularly report riding out 60 mph gusts. In a severe storm the right move is to switch the blower off \u2014 the dome settles onto the water and rides it out like a pool cover. The zipper is deliberately the weakest point, so an extreme gust costs you a zipper rather than the whole dome.")
+    +  faq("What about heavy snow?",
+          "Light and medium snow melts off on its own from the warmth coming off the pool. In a real storm you can switch the blower off and let it settle onto the water. If you're away, the snow slowly presses it down to the surface, melts against the warm water, and it re-inflates on its own because the blower is still running. It works down to about \u221210\u00b0F.")
+    +  faq("What does it cost to run?",
+          "The blower isn't running constantly \u2014 a pressure switch kicks it on only when the pressure drops, so it uses less than people assume. And the dome traps heat and cuts evaporation, so the heating you do pay for goes a lot further than it would on an open pool.")
+    +  faq("How long will it last?",
+          "9\u201312 years in a cold climate like ours. Heat is what wears vinyl out, not cold \u2014 a dome here will outlive the same one in a desert state.")
+    +  faq("What's the warranty?",
+          "Three years \u2014 the first year in full, the following two prorated. We submit the install photos and handle activating it with the manufacturer for you.")
+    +  faq("Is it safe with kids around?",
+          "The entry zips shut and takes a padlock, so the water isn't open to curious kids or pets when you're not out there. It's a real physical barrier, though not a code-rated safety cover.")
+    +  faq("What happens in the summer?",
+          "It comes down and goes into storage. The anchor sleeves stay in the deck with stainless plugs sitting flush, so your deck is flat and clear all summer \u2014 nothing to trip over.")
+    +  faq("What if I change my mind?",
+          "You have three business days after signing to cancel, in writing, for a full refund of anything paid.")
     +  '</div>';
 
   h += '</div>';   // /layout
