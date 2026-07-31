@@ -102,10 +102,13 @@
   @media(min-width:900px){
     .wrap{max-width:1080px;padding:0 28px}
     .brand{font-size:24px;margin:28px 0 20px}
-    .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:22px;align-items:start}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:22px}
     .layout > .card{grid-column:1}
-    .layout > .side{grid-column:2}
-    .side{position:sticky;top:20px}
+    /* Span every row rather than sit in one: as a single-row item the column
+       below it was dead space, and sticky had no height to travel through so it
+       scrolled away. (span 99 rather than 1/-1 — the latter doesn't reach
+       implicit rows.) */
+    .layout > .side{grid-column:2;grid-row:1/span 99;align-self:start;position:sticky;top:20px}
     h1{font-size:30px}
     .hero img{max-height:460px;object-fit:cover}
     /* Room to show them all at once — no scrolling to discover the rest. */
@@ -116,6 +119,14 @@
     .real dl{columns:2;column-gap:26px}
     .real dt{break-after:avoid}
     .real dd{break-inside:avoid;margin-bottom:12px}
+    /* A pill, a name and one line don't need a card around them at this width —
+       boxed, it was a wide empty band above the render. It reads as a page
+       heading instead. */
+    .intro{background:transparent;border:0;box-shadow:none;padding:0 2px;margin-bottom:14px}
+    /* Full-bleed buttons across 1080px look like a mistake. */
+    .btn{max-width:400px;margin-left:auto;margin-right:auto}
+    /* Long measures are hard to read — hold the prose to a sane line length. */
+    .wins li span,.steps li span,details p{max-width:62ch}
   }
   @media print{
     body{background:#fff}
@@ -145,7 +156,7 @@ function streetOf(a){
 function render(d){
   var h = "";
 
-  h += '<div class="card"><span class="pill">Your proposal</span>'
+  h += '<div class="card intro"><span class="pill">Your proposal</span>'
     +  '<h1>'+(d.name ? esc(String(d.name).split(" ")[0]) + "’s pool dome" : "Your pool dome")+'</h1>'
     +  '<p class="sub">Everything in one place while you think it over. Nothing here expires — take your time.</p></div>';
 
