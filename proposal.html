@@ -95,10 +95,8 @@
     font-size:16px;font-weight:700;background:var(--navy);color:#fff;box-shadow:0 8px 22px rgba(31,42,55,.22)}
   .btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);box-shadow:none;margin-top:10px}
   .foot{text-align:center;color:var(--mut);font-size:12.5px;padding:6px 18px 0}
-  /* Desktop: the narrative runs down the left, and what they're deciding on —
-     the spec and the price — rides alongside it in a column that stays put as
-     they scroll. Mobile order is untouched: the grid collapses to one column and
-     the cards fall back into their original sequence. */
+  /* Desktop: same single column of cards, each using the extra width inside
+     itself. Mobile is untouched — none of this applies below 900px. */
   @media(min-width:900px){
     .wrap{max-width:1080px;padding:0 28px}
     .brand{font-size:24px;margin:28px 0 20px}
@@ -188,8 +186,6 @@ function render(d){
 
   // Configuration
   var rows = [];
-  if (d.sqft) rows.push(["Dome size", d.sqft.toLocaleString("en-US") + " sq ft"]);
-  else if (d.pool_size) rows.push(["Pool size", d.pool_size]);
   if (d.options){
     if (d.options.color) rows.push(["Roof color", d.options.color]);
     if (d.options.door) rows.push(["Door", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
@@ -197,15 +193,10 @@ function render(d){
   }
   h += '<aside class="side">';
   if (rows.length){
-    // Show the roof they chose on a real dome — the render above is their yard,
-    // this is the colour on something already built.
-    var roof = d.options && ROOF_SHOTS[d.options.color];
+
     h += '<div class="card"><h2>What you picked</h2><ul class="spec">'
       + rows.map(function(r){ return '<li><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></li>'; }).join("")
       + '</ul>'
-      + (roof ? '<figure style="margin:16px 0 0"><img src="/Images/'+roof+'.webp" alt="'+esc(d.options.color)+'" loading="lazy" class="zoom" '
-              + 'style="display:block;width:100%;border-radius:14px;border:1px solid var(--line);cursor:zoom-in" />'
-              + '<figcaption style="font-size:12px;color:var(--mut);margin-top:6px">'+esc(d.options.color)+', on a dome that’s already up.</figcaption></figure>' : '')
       + '</div>';
   }
 
@@ -281,15 +272,6 @@ function render(d){
   document.getElementById("root").innerHTML = h;
 }
 function faq(q, a){ return '<details><summary>'+esc(q)+'</summary><p>'+esc(a)+'</p></details>'; }
-// A real photo of the roof color they chose. Only the colors we actually have a
-// good shot of — a missing one shows nothing rather than the wrong dome.
-var ROOF_SHOTS = {
-  "Solid Aqua Roof": "roof-aqua",
-  "Solid Blue Roof": "roof-blue",
-  "Solid Tan Roof": "roof-tan",
-  "Solid White Roof": "roof-white",
-  "Blue & White Striped Roof": "roof-blue-striped"
-};
 function shot(src, alt){
   return '<figure><img src="'+src+'" alt="'+esc(alt)+'" loading="lazy" /></figure>';
 }
@@ -300,7 +282,7 @@ function shot(src, alt){
   var lb = document.getElementById("lb"), lbImg = document.getElementById("lbImg");
   function close(){ lb.classList.remove("open"); lbImg.src = ""; document.body.style.overflow = ""; }
   document.addEventListener("click", function(e){
-    var img = e.target.closest && e.target.closest(".gal img, img.zoom");
+    var img = e.target.closest && e.target.closest(".gal img");
     if (img){ lbImg.src = img.src; lbImg.alt = img.alt || ""; lb.classList.add("open"); document.body.style.overflow = "hidden"; return; }
     if (e.target === lb || e.target.id === "lbX") close();
   });
