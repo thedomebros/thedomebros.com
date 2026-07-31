@@ -72,10 +72,11 @@ console.log('Team call-through (dial-out):');
   ok('customers still get the menu', cxml.includes('/voice/route'));
 }
 
-console.log('Routing digit 3 -> voicemail:');
+console.log('Routing digit 3 (anything else) -> rings the team, not voicemail:');
 {
   const xml = await (await post('/voice/route', { Digits: '3', CallSid: 'CA_caller0', From: '+13855551000', To: '+13852044760' })).text();
-  ok('goes straight to voicemail', xml.includes('/voice/voicemail'));
+  ok('rings a cell instead of dumping to voicemail', xml.includes('/voice/whisper') && (xml.match(/<Number/g) || []).length === 1);
+  ok('does not go straight to voicemail', !xml.includes('/voice/voicemail'));
 }
 
 console.log('Routing digit 1 -> sequential ring (random order):');

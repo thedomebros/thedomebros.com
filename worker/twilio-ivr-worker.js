@@ -28,7 +28,7 @@
 // TODO before going live: validate the X-Twilio-Signature header so only Twilio
 // can hit these routes. Not yet implemented.
 
-const VOICE = "Polly.Joanna";
+const VOICE = "Polly.Salli-Neural";
 
 function twiml(body) {
   return new Response(
@@ -90,7 +90,7 @@ export default {
       `<Gather numDigits="1" action="/voice/route" method="POST" timeout="6">` +
         say(
           "Thanks for calling The Dome <phoneme alphabet=\"ipa\" ph=\"broʊz\">Bros</phoneme>. For a new pool dome quote, press 1. " +
-          "For an existing install or seasonal service, press 2. To leave a message, press 3."
+          "For an existing install or seasonal service, press 2. For anything else, press 3."
         ) +
       `</Gather>` +
       // No input → repeat the menu once.
@@ -141,42 +141,42 @@ export default {
       const form = await request.formData();
       const digit = (form.get("Digits") || "").toString();
 
-      if (digit === "1" || digit === "2") {
-        let cells = (env.SALES_CELLS || "")
-          .split(",").map((s) => s.trim()).filter(Boolean);
+      // Every keypress rings the team — 1 (new quote), 2 (existing/service),
+      // and 3/anything-else ("none of the above"). Callers who don't fit a
+      // category used to be dumped straight to voicemail on press 3; now they
+      // reach a person too. Voicemail is only the fallback after the ring
+      // sequence goes unanswered (or when no cells are configured).
+      let cells = (env.SALES_CELLS || "")
+        .split(",").map((s) => s.trim()).filter(Boolean);
 
-        // Sequential ring, random order per call. One cell at a time in a plain
-        // <Dial> forwards the CUSTOMER'S real caller ID to the cell (an API-placed
-        // fan-out can only show our own number), the whisper keeps a cell's
-        // voicemail from swallowing the call (it can't press a key, so the leg
-        // drops and we move on), and a decline just advances to the next person.
-        for (let i = cells.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [cells[i], cells[j]] = [cells[j], cells[i]];
-        }
-
-        // New-quote calls (press 1) always ring the sales rep first — the
-        // QUOTE_FIRST_CELL var (dashboard) pins that number to the front and
-        // the team shuffles in behind. Service calls (press 2) are unchanged.
-        const first = (env.QUOTE_FIRST_CELL || "").trim();
-        if (digit === "1" && first) cells = [first, ...cells.filter((c) => c !== first)];
-
-        if (cells.length === 0) {
-          return twiml(
-            say("Sorry, no one is available right now.") +
-            `<Redirect method="POST">/voice/voicemail</Redirect>`
-          );
-        }
-
-        // Tell the messaging app about the incoming call (call log entry).
-        const caller = (form.get("From") || "").toString();
-        ctx.waitUntil(msgPost(env, "/api/call-event", { from: caller, event: "incoming" }));
-
-        return twiml(dialStep(origin, cells, 0));
+      // Sequential ring, random order per call. One cell at a time in a plain
+      // <Dial> forwards the CUSTOMER'S real caller ID to the cell (an API-placed
+      // fan-out can only show our own number), the whisper keeps a cell's
+      // voicemail from swallowing the call (it can't press a key, so the leg
+      // drops and we move on), and a decline just advances to the next person.
+      for (let i = cells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cells[i], cells[j]] = [cells[j], cells[i]];
       }
 
-      // 3 (or anything else) → voicemail.
-      return twiml(`<Redirect method="POST">/voice/voicemail</Redirect>`);
+      // New-quote calls (press 1) always ring the sales rep first — the
+      // QUOTE_FIRST_CELL var (dashboard) pins that number to the front and
+      // the team shuffles in behind. Press 2 and 3 are a plain shuffle.
+      const first = (env.QUOTE_FIRST_CELL || "").trim();
+      if (digit === "1" && first) cells = [first, ...cells.filter((c) => c !== first)];
+
+      if (cells.length === 0) {
+        return twiml(
+          say("Sorry, no one is available right now.") +
+          `<Redirect method="POST">/voice/voicemail</Redirect>`
+        );
+      }
+
+      // Tell the messaging app about the incoming call (call log entry).
+      const caller = (form.get("From") || "").toString();
+      ctx.waitUntil(msgPost(env, "/api/call-event", { from: caller, event: "incoming" }));
+
+      return twiml(dialStep(origin, cells, 0));
     }
 
     // Sequential-ring progression: fires when a leg finishes. DialCallStatus is
