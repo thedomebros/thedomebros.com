@@ -122,7 +122,7 @@ function render(d){
 
   // What actually changes for them. Concrete scenes, not adjectives.
   h += '<div class="card"><h2>What changes</h2><ul class="wins">'
-    +  '<li><b>You swim in January</b><span>The pool stops being a six-week-a-year thing. Same water, same yard, just usable when it’s cold out.</span></li>'
+    +  '<li><b>You swim in January</b><span>Same water, same yard — it just stops sitting unused the moment the weather turns.</span></li>'
     +  '<li><b>The kids actually use it</b><span>Swim practice, birthdays, a Tuesday after school — in the middle of winter.</span></li>'
     +  '<li><b>Your pool stays clean</b><span>Leaves, dust and storm debris stay outside. Less skimming, less vacuuming, fewer chemicals chasing what blew in.</span></li>'
     +  '<li><b>Heat stays in the water</b><span>An open pool loses most of its heat to evaporation overnight. Covering it keeps the warmth — and the water — where you put it.</span></li>'
@@ -138,7 +138,7 @@ function render(d){
   if (d.sqft) rows.push(["Dome size", d.sqft.toLocaleString("en-US") + " sq ft"]);
   else if (d.pool_size) rows.push(["Pool size", d.pool_size]);
   if (d.options){
-    if (d.options.color) rows.push(["Roof colour", d.options.color]);
+    if (d.options.color) rows.push(["Roof color", d.options.color]);
     if (d.options.door) rows.push(["Door", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
     if (d.options.heater) rows.push(["Heater", d.options.heater]);
   }
@@ -159,13 +159,13 @@ function render(d){
   }
 
   // The trade-offs. Every one of these comes up eventually — better it comes
-  // from us now than from a neighbour after they've signed.
+  // from us now than from a neighbor after they've signed.
   h += '<div class="card real"><h2>Straight talk</h2>'
     +  '<p class="lead">Things we’d rather you hear from us than find out in January.</p><dl>'
-    +  '<dt>It’s big, and your neighbours will notice</dt>'
+    +  '<dt>It’s big, and your neighbors will notice</dt>'
     +  '<dd>It covers your pool and stands well above it. If you’re in an HOA, check the rules before you sign — we’d rather lose the sale than have you fight that fight afterwards.</dd>'
     +  '<dt>It’s seasonal work, not a one-off</dt>'
-    +  '<dd>It goes up in the autumn and comes down in the spring. That’s a job each way — we handle it, but it’s a date in the calendar and a cost to plan for, every year.</dd>'
+    +  '<dd>It goes up in the fall and comes down in the spring. That’s a job each way — we handle it, but it’s a date in the calendar and a cost to plan for, every year.</dd>'
     +  '</dl></div>';
 
   // What happens next
