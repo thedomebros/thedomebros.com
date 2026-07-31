@@ -50,10 +50,22 @@
   .steps li b{display:block}
   .steps li span{color:var(--mut);font-size:13.5px}
   /* Gallery */
-  .gal{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-  .gal figure{margin:0}
-  .gal img{display:block;width:100%;height:132px;object-fit:cover;border-radius:13px;border:1px solid var(--line)}
-  .gal figcaption{font-size:12px;color:var(--mut);margin-top:5px;line-height:1.35}
+  /* Phones: a swipeable strip. A 2-up grid crops these to postage stamps, and
+     the point of them is the scene. Bleeds to the card edge so it's obvious
+     there's more to the right. */
+  .gal{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;margin:0 -22px;padding:2px 22px 6px;scrollbar-width:none}
+  .gal::-webkit-scrollbar{display:none}
+  .gal figure{margin:0;flex:0 0 82%;scroll-snap-align:center}
+  .gal img{display:block;width:100%;height:200px;object-fit:cover;border-radius:14px;
+    border:1px solid var(--line);cursor:zoom-in}
+  /* Tap to see it properly — these are the whole argument. */
+  .lb{position:fixed;inset:0;background:rgba(15,23,34,.93);display:none;
+    align-items:center;justify-content:center;padding:18px;z-index:60}
+  .lb.open{display:flex}
+  .lb img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  .lb .x{position:absolute;top:14px;right:16px;width:38px;height:38px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.15);color:#fff;font-size:19px;line-height:38px;cursor:pointer;padding:0}
   /* Benefit list */
   .wins{list-style:none;margin:0;padding:0}
   .wins li{position:relative;padding:0 0 13px 30px;font-size:14.5px}
@@ -83,6 +95,28 @@
     font-size:16px;font-weight:700;background:var(--navy);color:#fff;box-shadow:0 8px 22px rgba(31,42,55,.22)}
   .btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);box-shadow:none;margin-top:10px}
   .foot{text-align:center;color:var(--mut);font-size:12.5px;padding:6px 18px 0}
+  /* Desktop: the narrative runs down the left, and what they're deciding on —
+     the spec and the price — rides alongside it in a column that stays put as
+     they scroll. Mobile order is untouched: the grid collapses to one column and
+     the cards fall back into their original sequence. */
+  @media(min-width:900px){
+    .wrap{max-width:1080px;padding:0 28px}
+    .brand{font-size:24px;margin:28px 0 20px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:22px;align-items:start}
+    .layout > .card{grid-column:1}
+    .layout > .side{grid-column:2}
+    .side{position:sticky;top:20px}
+    h1{font-size:30px}
+    .hero img{max-height:460px;object-fit:cover}
+    /* Room to show them all at once — no scrolling to discover the rest. */
+    .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;overflow:visible}
+    .gal figure{flex:none}
+    .gal img{height:150px}
+    /* Two columns of trade-offs reads better than one long list out here. */
+    .real dl{columns:2;column-gap:26px}
+    .real dt{break-after:avoid}
+    .real dd{break-inside:avoid;margin-bottom:12px}
+  }
   @media print{
     body{background:#fff}
     .card{box-shadow:none;break-inside:avoid}
@@ -96,6 +130,7 @@
   <div id="root"><div class="loading">Loading your proposal&hellip;</div></div>
   <p class="foot">Questions? Text or call <a href="tel:+13852044760">(385)&nbsp;204-4760</a>.</p>
 </div>
+<div class="lb" id="lb"><button class="x" id="lbX" aria-label="Close">&#10005;</button><img id="lbImg" alt="" /></div>
 <script>
 var WORKER = "https://quote-form.thedomebros-com.workers.dev";
 var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
@@ -122,6 +157,8 @@ function render(d){
       +  (streetOf(d.address) ? " &middot; " + esc(streetOf(d.address)) : "") + '.</div></div>';
   }
 
+  h += '<div class="layout">';
+
   // What actually changes for them. Concrete scenes, not adjectives.
   h += '<div class="card"><h2>What changes</h2><ul class="wins">'
     +  '<li><b>You swim in January</b><span>Same water, same yard — it just stops sitting unused the moment the weather turns.</span></li>'
@@ -144,6 +181,7 @@ function render(d){
     if (d.options.door) rows.push(["Door", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
     if (d.options.heater) rows.push(["Heater", d.options.heater]);
   }
+  h += '<aside class="side">';
   if (rows.length){
     // Show the roof they chose on a real dome — the render above is their yard,
     // this is the colour on something already built.
@@ -151,8 +189,8 @@ function render(d){
     h += '<div class="card"><h2>What you picked</h2><ul class="spec">'
       + rows.map(function(r){ return '<li><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></li>'; }).join("")
       + '</ul>'
-      + (roof ? '<figure style="margin:16px 0 0"><img src="/Images/'+roof+'.webp" alt="'+esc(d.options.color)+'" loading="lazy" '
-              + 'style="display:block;width:100%;border-radius:14px;border:1px solid var(--line)" />'
+      + (roof ? '<figure style="margin:16px 0 0"><img src="/Images/'+roof+'.webp" alt="'+esc(d.options.color)+'" loading="lazy" class="zoom" '
+              + 'style="display:block;width:100%;border-radius:14px;border:1px solid var(--line);cursor:zoom-in" />'
               + '<figcaption style="font-size:12px;color:var(--mut);margin-top:6px">'+esc(d.options.color)+', on a dome that’s already up.</figcaption></figure>' : '')
       + '</div>';
   }
@@ -166,6 +204,8 @@ function render(d){
       +  '<div class="split"><div><div class="l">To get started</div><div class="n">'+money(half)+'</div></div>'
       +  '<div><div class="l">On completion</div><div class="n">'+money(half)+'</div></div></div></div>';
   }
+
+  h += '</aside>';
 
   // The trade-offs. Every one of these comes up eventually — better it comes
   // from us now than from a neighbor after they've signed.
@@ -194,12 +234,12 @@ function render(d){
   // page is written material we have to stand behind. The last four are real
   // installs, one per roof color.
   h += '<div class="card"><h2>Picture your winter</h2><div class="gal">'
-    +  shot("/Images/pool-dome-winter.webp", "Pool dome lit from inside, backyard under snow", "January, and the pool is open.")
-    +  shot("/Images/inside-dome-winter.webp", "Steam rising off a heated pool inside the dome, snow outside", "Steam off the water. Snow on the other side of the wall.")
-    +  shot("/Images/roof-aqua.webp", "Aqua pool dome in deep snow surrounded by pines", "Snowed in. Still swimming.")
-    +  shot("/Images/roof-blue-striped.webp", "Blue and white striped pool dome in a backyard in late fall", "Up before the first freeze.")
-    +  shot("/Images/roof-blue.webp", "Blue pool dome filling a suburban backyard", "A normal backyard, seen from upstairs.")
-    +  shot("/Images/roof-white.webp", "White pool dome on a landscaped property", "It doesn\u2019t have to look like a tent.")
+    +  shot("/Images/pool-dome-winter.webp", "Pool dome lit from inside, backyard under snow")
+    +  shot("/Images/inside-dome-winter.webp", "Steam rising off a heated pool inside the dome, snow outside")
+    +  shot("/Images/roof-aqua.webp", "Aqua pool dome in deep snow surrounded by pines")
+    +  shot("/Images/roof-blue-striped.webp", "Blue and white striped pool dome in a backyard in late fall")
+    +  shot("/Images/roof-blue.webp", "Blue pool dome filling a suburban backyard")
+    +  shot("/Images/roof-white.webp", "White pool dome on a landscaped property")
     +  '</div></div>';
 
   // FAQ — the questions that stall a decision.
@@ -209,6 +249,8 @@ function render(d){
     +  faq("Do you take it down in the summer?", "Yes — we offer seasonal removal, storage and reinstallation as a separate service so you get an open pool in summer and a warm one in winter.")
     +  faq("What if I change my mind?", "You have three business days after signing to cancel, in writing, for a full refund of anything paid.")
     +  '</div>';
+
+  h += '</div>';   // /layout
 
   // CTA
   if (d.contract){
@@ -234,10 +276,22 @@ var ROOF_SHOTS = {
   "Solid White Roof": "roof-white",
   "Blue & White Striped Roof": "roof-blue-striped"
 };
-function shot(src, alt, cap){
-  return '<figure><img src="'+src+'" alt="'+esc(alt)+'" loading="lazy" />'
-    + '<figcaption>'+esc(cap)+'</figcaption></figure>';
+function shot(src, alt){
+  return '<figure><img src="'+src+'" alt="'+esc(alt)+'" loading="lazy" /></figure>';
 }
+
+// Tap any gallery shot to see it full size. Delegated, because the gallery is
+// rendered after this runs.
+(function(){
+  var lb = document.getElementById("lb"), lbImg = document.getElementById("lbImg");
+  function close(){ lb.classList.remove("open"); lbImg.src = ""; document.body.style.overflow = ""; }
+  document.addEventListener("click", function(e){
+    var img = e.target.closest && e.target.closest(".gal img, img.zoom");
+    if (img){ lbImg.src = img.src; lbImg.alt = img.alt || ""; lb.classList.add("open"); document.body.style.overflow = "hidden"; return; }
+    if (e.target === lb || e.target.id === "lbX") close();
+  });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") close(); });
+})();
 
 (async function(){
   var t = new URLSearchParams(location.search).get("t") || "";
