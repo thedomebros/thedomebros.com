@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Your pool dome proposal | TheDomeBros</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon-domebros.svg" />
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-domebros.png" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{--cream:#f6f4ef;--card:#fffdf8;--ink:#1f2a37;--mut:#5b6675;--navy:#1f3b73;--navy-d:#162a52;--navy2:#3a5fa8;--line:#e4ddcf;--err:#b3261e}
+  *{box-sizing:border-box}html,body{margin:0;overflow-x:hidden}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;padding:0 0 40px}
+  h1,h2,h3,.brand,.btn{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.02em}
+  .wrap{width:100%;max-width:620px;margin:0 auto;padding:0 18px}
+  .brand{font-weight:800;font-size:22px;color:var(--navy);text-decoration:none;display:inline-block;margin:22px 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 22px;box-shadow:0 4px 20px rgba(31,42,55,.06);margin-bottom:16px}
+  .pill{display:inline-block;background:#e7ecf7;border:1px solid #d4ddf0;color:var(--navy);font-weight:700;font-size:12px;padding:5px 13px;border-radius:999px;margin-bottom:12px}
+  h1{font-size:25px;margin:0 0 6px}
+  h2{font-size:17px;margin:0 0 12px;color:var(--navy)}
+  .sub{color:var(--mut);font-size:14.5px;margin:0 0 4px}
+  .loading,.err{color:var(--mut);text-align:center;padding:40px 18px;font-size:14.5px}
+  .err{color:var(--err)}
+  /* Hero: their dome on their own property. */
+  .hero{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#eceadf;margin-bottom:14px}
+  .hero img{display:block;width:100%;height:auto}
+  .herocap{font-size:12.5px;color:var(--mut);padding:9px 13px;background:var(--card)}
+  /* Spec rows */
+  .spec{list-style:none;margin:0;padding:0}
+  .spec li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+  .spec li:last-child{border-bottom:0}
+  .spec .k{color:var(--mut)}
+  .spec .v{font-weight:700;text-align:right}
+  /* Price */
+  .price{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:34px;color:var(--navy);margin:2px 0 2px}
+  .pricenote{font-size:13px;color:var(--mut)}
+  .split{display:flex;gap:10px;margin-top:14px}
+  .split div{flex:1;background:#eef1f7;border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+  .split .l{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .split .n{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin-top:2px}
+  /* Steps */
+  .steps{list-style:none;margin:0;padding:0;counter-reset:s}
+  .steps li{counter-increment:s;position:relative;padding:0 0 16px 38px;font-size:14.5px}
+  .steps li:before{content:counter(s);position:absolute;left:0;top:-1px;width:26px;height:26px;border-radius:50%;
+    background:var(--navy);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:13px;
+    display:flex;align-items:center;justify-content:center}
+  .steps li b{display:block}
+  .steps li span{color:var(--mut);font-size:13.5px}
+  /* Gallery */
+  .gal{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .gal img{display:block;width:100%;height:130px;object-fit:cover;border-radius:13px;border:1px solid var(--line)}
+  /* FAQ */
+  details{border-bottom:1px solid var(--line);padding:11px 0}
+  details:last-of-type{border-bottom:0}
+  summary{cursor:pointer;font-weight:700;font-size:14.5px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary:after{content:"+";float:right;color:var(--navy2);font-weight:800}
+  details[open] summary:after{content:"–"}
+  details p{margin:9px 0 2px;font-size:14px;color:var(--mut)}
+  /* CTA */
+  .btn{display:block;width:100%;text-align:center;text-decoration:none;border:0;border-radius:999px;padding:15px;
+    font-size:16px;font-weight:700;background:var(--navy);color:#fff;box-shadow:0 8px 22px rgba(31,42,55,.22)}
+  .btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);box-shadow:none;margin-top:10px}
+  .foot{text-align:center;color:var(--mut);font-size:12.5px;padding:6px 18px 0}
+  @media print{
+    body{background:#fff}
+    .card{box-shadow:none;break-inside:avoid}
+    .btn,.noprint{display:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/">TheDomeBros</a>
+  <div id="root"><div class="loading">Loading your proposal&hellip;</div></div>
+  <p class="foot">Questions? Text or call <a href="tel:+13852044760">(385)&nbsp;204-4760</a>.</p>
+</div>
+<script>
+var WORKER = "https://quote-form.thedomebros-com.workers.dev";
+var esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+var money = function(n){ return "$" + Math.round(n).toLocaleString("en-US"); };
+
+function render(d){
+  var h = "";
+
+  // Their dome, on their property — the whole reason this page works.
+  if (d.render){
+    h += '<div class="hero"><img src="'+esc(d.render)+'" alt="Your pool dome, shown on your property" />'
+      +  '<div class="herocap">Your dome, rendered on your property'
+      +  (d.address ? " &middot; " + esc(d.address) : "") + '.</div></div>';
+  }
+
+  h += '<div class="card"><span class="pill">Your proposal</span>'
+    +  '<h1>'+(d.name ? esc(String(d.name).split(" ")[0]) + "’s pool dome" : "Your pool dome")+'</h1>'
+    +  '<p class="sub">Everything in one place while you think it over. Nothing here expires — take your time.</p></div>';
+
+  // Configuration
+  var rows = [];
+  if (d.sqft) rows.push(["Dome size", d.sqft.toLocaleString("en-US") + " sq ft"]);
+  else if (d.pool_size) rows.push(["Pool size", d.pool_size]);
+  if (d.options){
+    if (d.options.color) rows.push(["Roof colour", d.options.color]);
+    if (d.options.door) rows.push(["Door", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
+    if (d.options.heater) rows.push(["Heater", d.options.heater]);
+  }
+  if (rows.length){
+    h += '<div class="card"><h2>What you picked</h2><ul class="spec">'
+      + rows.map(function(r){ return '<li><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></li>'; }).join("")
+      + '</ul></div>';
+  }
+
+  // Price — the exact quote, matching the contract.
+  if (d.price != null){
+    var half = d.price / 2;
+    h += '<div class="card"><h2>Your price</h2>'
+      +  '<div class="price">'+money(d.price)+'</div>'
+      +  '<div class="pricenote">Includes the dome, delivery, and professional installation. Utah sales tax included.</div>'
+      +  '<div class="split"><div><div class="l">To get started</div><div class="n">'+money(half)+'</div></div>'
+      +  '<div><div class="l">On completion</div><div class="n">'+money(half)+'</div></div></div></div>';
+  }
+
+  // What happens next
+  h += '<div class="card"><h2>What happens next</h2><ol class="steps">'
+    +  '<li><b>You sign</b><span>Review the agreement and sign online — no pressure, and you have three days to change your mind.</span></li>'
+    +  '<li><b>50% deposit</b><span>This reserves your dome and locks your price.</span></li>'
+    +  '<li><b>We schedule your install</b><span>We’ll pick a date that works and confirm it with you.</span></li>'
+    +  '<li><b>Install day</b><span>Our crew handles everything. Most installs are done in a day.</span></li>'
+    +  '<li><b>You swim</b><span>Remaining balance is due once it’s up and you’re happy.</span></li>'
+    +  '</ol></div>';
+
+  // Real installs
+  h += '<div class="card"><h2>Domes we’ve installed</h2><div class="gal">'
+    +  '<img src="/Images/Gray%20Bubble%20Cover%20Cropped.png" alt="Pool dome exterior" loading="lazy" />'
+    +  '<img src="/Images/Inside%20Bubble%20Cropped.png" alt="Inside a pool dome" loading="lazy" />'
+    +  '</div></div>';
+
+  // FAQ — the questions that stall a decision.
+  h += '<div class="card"><h2>Common questions</h2>'
+    +  faq("Will it hold up to snow and wind?", "Air-supported domes are engineered for Utah winters — the air pressure inside is what carries snow and wind load, and the blower runs continuously to maintain it.")
+    +  faq("What does it cost to heat?", "It varies with your pool, the heater you choose and how warm you keep it. We’ll walk you through what to expect for your setup — just ask.")
+    +  faq("How long does it last?", "With normal seasonal care, these are a multi-season investment. Your agreement covers the manufacturer’s warranty, which we administer for you.")
+    +  faq("Do you take it down in the summer?", "Yes — we offer seasonal removal, storage and reinstallation as a separate service so you get an open pool in summer and a warm one in winter.")
+    +  faq("What if I change my mind?", "You have three business days after signing to cancel, in writing, for a full refund of anything paid.")
+    +  '</div>';
+
+  // CTA
+  if (d.contract){
+    h += '<div class="card noprint"><h2>Ready when you are</h2>'
+      +  '<p class="sub" style="margin-bottom:14px">You can review and sign right here. Questions first? Text us — we’d rather you be sure.</p>'
+      +  '<a class="btn" href="'+esc(d.contract)+'">Review &amp; sign</a>'
+      +  '<a class="btn ghost" href="sms:+13852044760">Text us a question</a></div>';
+  } else {
+    h += '<div class="card noprint"><h2>Questions?</h2>'
+      +  '<p class="sub" style="margin-bottom:14px">We’d rather answer them than have you guess.</p>'
+      +  '<a class="btn ghost" href="sms:+13852044760">Text us</a></div>';
+  }
+
+  document.getElementById("root").innerHTML = h;
+}
+function faq(q, a){ return '<details><summary>'+esc(q)+'</summary><p>'+esc(a)+'</p></details>'; }
+
+(async function(){
+  var t = new URLSearchParams(location.search).get("t") || "";
+  if (!t){ document.getElementById("root").innerHTML = '<div class="err">This link is missing its code. Please use the link we sent you.</div>'; return; }
+  try{
+    var res = await fetch(WORKER + "/proposal", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ t: t })
+    });
+    var d = await res.json();
+    if (!res.ok || !d.ok){ throw new Error(d.error || "not found"); }
+    render(d);
+  }catch(e){
+    document.getElementById("root").innerHTML =
+      '<div class="err">We couldn’t load this proposal. Text us at (385)&nbsp;204-4760 and we’ll send you a fresh link.</div>';
+  }
+})();
+</script>
+</body>
+</html>

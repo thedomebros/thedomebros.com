@@ -209,6 +209,23 @@ async function handleSchedule(request, env, origin, path) {
   }
 }
 
+// Relay the customer proposal page (thedomebros.com/proposal) to the messaging
+// Worker, which holds the quote, the dome configuration and the render. Nothing
+// is written here — the page is read-only, and the token in the link is what
+// identifies the customer.
+async function handleProposal(request, env, origin) {
+  let d;
+  try { d = await request.json(); } catch { return json({ success: false, message: "Bad request" }, 400, origin); }
+  if (!env.MESSAGING_INGEST_SECRET) return json({ success: false, message: "Not configured" }, 500, origin);
+  try {
+    const r = await messagingFetch(env, "/api/proposal", { t: (d.t || "").toString().slice(0, 80) });
+    const out = await r.json().catch(() => ({}));
+    return json({ success: r.ok, ...out }, r.ok ? 200 : (r.status || 502), origin);
+  } catch (e) {
+    return json({ success: false, error: "Couldn't load your proposal." }, 502, origin);
+  }
+}
+
 // Relay the referral partner submission page (thedomebros.com/refer) to the
 // messaging Worker, which owns the partner tokens and the lead records. The
 // browser talks to this Worker; the shared secret rides on the relay.
@@ -281,6 +298,9 @@ export default {
     }
     if (reqPath === "/schedule/slots" || reqPath === "/schedule/propose") {
       return handleSchedule(request, env, origin, reqPath);
+    }
+    if (reqPath === "/proposal") {
+      return handleProposal(request, env, origin);
     }
 
     let form;
