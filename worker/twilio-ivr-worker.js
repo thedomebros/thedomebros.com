@@ -242,10 +242,12 @@ export default {
       // customer between ring attempts.
       // Announce who it is when we know them, so the answerer can pull the
       // contact up before saying hello instead of asking them to re-explain.
+      // "Business call" leads so the familiar cue still comes first and the
+      // name lands before the instruction to press.
       const who = (u.searchParams.get("who") || "").trim();
       return twiml(
         `<Gather numDigits="1" timeout="4" action="${origin}/voice/whisper-accept" method="POST">` +
-          say(who ? `${escapeHtml(who)}. Press any key to take it.` : "Business call. Press any key to take it.") +
+          say(who ? `Business call: ${escapeHtml(who)}. Press any key to enter.` : "Business call. Press any key to enter.") +
         `</Gather>` +
         `<Hangup/>`
       );
