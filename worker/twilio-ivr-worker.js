@@ -165,8 +165,14 @@ export default {
       // category used to be dumped straight to voicemail on press 3; now they
       // reach a person too. Voicemail is only the fallback after the ring
       // sequence goes unanswered (or when no cells are configured).
-      let cells = (env.SALES_CELLS || "")
-        .split(",").map((s) => s.trim()).filter(Boolean);
+      //
+      // Who's calling, and who works here, in one lookup: the ring list comes
+      // from the Leads gear, so a rep's cell added there is rung immediately.
+      // SALES_CELLS stays the fallback for a failed lookup or an empty gear.
+      const caller = (form.get("From") || "").toString();
+      const info = await msgAsk(env, "/api/caller-lookup", { from: caller });
+      let cells = (Array.isArray(info.ring) && info.ring.length ? info.ring : (env.SALES_CELLS || "").split(","))
+        .map((s) => String(s).trim()).filter(Boolean);
 
       // Sequential ring, random order per call. One cell at a time in a plain
       // <Dial> forwards the CUSTOMER'S real caller ID to the cell (an API-placed
@@ -184,12 +190,8 @@ export default {
       const first = (env.QUOTE_FIRST_CELL || "").trim();
       if (digit === "1" && first) cells = [first, ...cells.filter((c) => c !== first)];
 
-      // Who's calling? The app knows the name (for the whisper) and, if this
-      // lead already has an assigned rep, that rep's cell. An assigned rep
-      // outranks QUOTE_FIRST_CELL: they've had the conversation already, so
-      // they answer with the context. Everything else falls through unchanged.
-      const caller = (form.get("From") || "").toString();
-      const info = await msgAsk(env, "/api/caller-lookup", { from: caller });
+      // An assigned rep outranks QUOTE_FIRST_CELL: they've already had the
+      // conversation, so they're the one who answers with the context.
       if (info.cell) cells = [info.cell, ...cells.filter((c) => c !== info.cell)];
 
       if (cells.length === 0) {
