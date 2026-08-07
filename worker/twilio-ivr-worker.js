@@ -68,14 +68,33 @@ function msgPost(env, path, body) {
   return (env.MSG ? env.MSG.fetch(url, init) : fetch(url, init)).catch(() => {});
 }
 
+// Blocking variant of msgPost — the caller lookup needs the response body, so
+// it can't be fire-and-forget. Any failure returns {} so the call still rings.
+async function msgAsk(env, path, body) {
+  const url = `https://messaging.thedomebros-com.workers.dev${path}`;
+  const init = {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-VM-Secret": env.VM_SECRET || "" },
+    body: JSON.stringify(body),
+  };
+  try {
+    const r = await (env.MSG ? env.MSG.fetch(url, init) : fetch(url, init));
+    return r.ok ? await r.json() : {};
+  } catch (e) { return {}; }
+}
+
 // One step of the sequential ring: dial cell i with the whisper screen; the
 // Dial's action advances to i+1 (or voicemail) unless the call was taken. No
 // callerId attribute — the customer's real number passes through to the cell.
-function dialStep(origin, order, i) {
-  const next = `/voice/seq?order=${encodeURIComponent(order.join(","))}&i=${i + 1}`;
+// `who` rides along on both URLs so every leg of the ring announces the same
+// caller, not just the first.
+function dialStep(origin, order, i, who) {
+  const tail = who ? `&who=${encodeURIComponent(who)}` : "";
+  const next = `/voice/seq?order=${encodeURIComponent(order.join(","))}&i=${i + 1}${tail}`;
+  const whisper = `${origin}/voice/whisper` + (who ? `?who=${encodeURIComponent(who)}` : "");
   return (
     `<Dial timeout="15" action="${next.replace(/&/g, "&amp;")}" method="POST">` +
-    `<Number url="${origin}/voice/whisper">${order[i]}</Number></Dial>`
+    `<Number url="${whisper}">${order[i]}</Number></Dial>`
   );
 }
 
@@ -165,6 +184,14 @@ export default {
       const first = (env.QUOTE_FIRST_CELL || "").trim();
       if (digit === "1" && first) cells = [first, ...cells.filter((c) => c !== first)];
 
+      // Who's calling? The app knows the name (for the whisper) and, if this
+      // lead already has an assigned rep, that rep's cell. An assigned rep
+      // outranks QUOTE_FIRST_CELL: they've had the conversation already, so
+      // they answer with the context. Everything else falls through unchanged.
+      const caller = (form.get("From") || "").toString();
+      const info = await msgAsk(env, "/api/caller-lookup", { from: caller });
+      if (info.cell) cells = [info.cell, ...cells.filter((c) => c !== info.cell)];
+
       if (cells.length === 0) {
         return twiml(
           say("Sorry, no one is available right now.") +
@@ -173,10 +200,16 @@ export default {
       }
 
       // Tell the messaging app about the incoming call (call log entry).
-      const caller = (form.get("From") || "").toString();
       ctx.waitUntil(msgPost(env, "/api/call-event", { from: caller, event: "incoming" }));
 
-      return twiml(dialStep(origin, cells, 0));
+      // What the answering cell hears: "Jay Deher, new quote." A caller we
+      // don't know falls back to the reason alone, then to "Business call".
+      const reason = digit === "1" ? "new quote" : digit === "2" ? "existing customer" : "";
+      let who = "";
+      if (info.name) who = reason ? `${info.name}, ${reason}` : info.name;
+      else if (reason) who = reason.charAt(0).toUpperCase() + reason.slice(1);
+
+      return twiml(dialStep(origin, cells, 0, who));
     }
 
     // Sequential-ring progression: fires when a leg finishes. DialCallStatus is
@@ -193,7 +226,7 @@ export default {
       }
       const order = (u.searchParams.get("order") || "").split(",").filter(Boolean);
       const i = parseInt(u.searchParams.get("i") || "0", 10);
-      if (i < order.length) return twiml(dialStep(origin, order, i));
+      if (i < order.length) return twiml(dialStep(origin, order, i, u.searchParams.get("who") || ""));
       return twiml(
         say("Sorry, we couldn't reach anyone right now.") +
         `<Redirect method="POST">/voice/voicemail</Redirect>`
@@ -207,9 +240,12 @@ export default {
       // timeout 4: a human presses within a couple of seconds; the long tail is
       // only ever a voicemail robot, and every second here is dead air for the
       // customer between ring attempts.
+      // Announce who it is when we know them, so the answerer can pull the
+      // contact up before saying hello instead of asking them to re-explain.
+      const who = (u.searchParams.get("who") || "").trim();
       return twiml(
         `<Gather numDigits="1" timeout="4" action="${origin}/voice/whisper-accept" method="POST">` +
-          say("Business call. Press any key to take it.") +
+          say(who ? `${escapeHtml(who)}. Press any key to take it.` : "Business call. Press any key to take it.") +
         `</Gather>` +
         `<Hangup/>`
       );
