@@ -348,8 +348,14 @@ export default {
       if (!email && (phoneDigits.length < 10 || phoneDigits.length > 15)) {
         return json({ success: false, message: "Please enter your email or phone number." }, 400, origin);
       }
-    } else if (!name || !email || !poolSize) {
-      return json({ success: false, message: "Please fill in all fields." }, 400, origin);
+    } else {
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (!name || !poolSize) {
+        return json({ success: false, message: "Please fill in all fields." }, 400, origin);
+      }
+      if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+        return json({ success: false, message: "Please enter a valid phone number so we can call you." }, 400, origin);
+      }
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return json({ success: false, message: "Please enter a valid email." }, 400, origin);
