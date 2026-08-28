@@ -218,7 +218,7 @@ async function handleProposal(request, env, origin) {
   try { d = await request.json(); } catch { return json({ success: false, message: "Bad request" }, 400, origin); }
   if (!env.MESSAGING_INGEST_SECRET) return json({ success: false, message: "Not configured" }, 500, origin);
   try {
-    const r = await messagingFetch(env, "/api/proposal", { t: (d.t || "").toString().slice(0, 80) });
+    const r = await messagingFetch(env, "/api/proposal", { t: (d.t || "").toString().slice(0, 80), team: d.team === true });
     const out = await r.json().catch(() => ({}));
     return json({ success: r.ok, ...out }, r.ok ? 200 : (r.status || 502), origin);
   } catch (e) {
