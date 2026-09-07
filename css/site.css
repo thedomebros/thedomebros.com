@@ -20,6 +20,7 @@ img{max-width:100%}
 .brand{font-weight:800;font-size:21px;color:var(--navy);text-decoration:none}
 .nav .links a{margin-left:26px;text-decoration:none;color:var(--mut);font-weight:600;font-size:15px}
 .nav .links a:hover,.nav .links a.active{color:var(--navy)}
+@media(max-width:1080px){.nav .links a{margin-left:16px}}
 .navtoggle{display:none}
 .hamburger{display:none}
 .navscrim{display:none}
@@ -87,12 +88,16 @@ img{max-width:100%}
 .feature img{width:100%;height:auto;border-radius:24px}
 .feature .quote{max-width:none;margin:0;text-align:left}
 
-/* Photo gallery (homepage) */
-.shots{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+/* Photo galleries (homepage grid + /gallery page groups) */
+.shots{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
 .shots figure{margin:0}
 .shots img{display:block;width:100%;height:230px;object-fit:cover;border-radius:18px;border:1px solid var(--line)}
 .shots figcaption{color:var(--mut);font-size:14px;margin-top:8px}
 .credit{color:var(--mut);font-size:13px;text-align:center;margin-top:26px}
+.galh{font-size:21px;margin:52px 0 4px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.galh:first-of-type{margin-top:0}
+.galsub{color:var(--mut);font-size:15px;margin:0 0 20px}
+.galmore{text-align:center;margin-top:30px}
 
 /* FAQ accordion (no JS, uses <details>) */
 .faq{max-width:760px}
