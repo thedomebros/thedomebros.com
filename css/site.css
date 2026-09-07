@@ -90,9 +90,7 @@ img{max-width:100%}
 
 /* Photo galleries (homepage grid + /gallery page groups) */
 .shots{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-.shots figure{margin:0}
 .shots img{display:block;width:100%;height:230px;object-fit:cover;border-radius:18px;border:1px solid var(--line)}
-.shots figcaption{color:var(--mut);font-size:14px;margin-top:8px}
 .credit{color:var(--mut);font-size:13px;text-align:center;margin-top:26px}
 .galh{font-size:21px;margin:52px 0 4px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .galh:first-of-type{margin-top:0}
