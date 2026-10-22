@@ -361,18 +361,22 @@ export default {
       return json({ success: false, message: "Please enter a valid email." }, 400, origin);
     }
 
-    // Cloudflare Turnstile bot check. Every form fails open: a failed check
-    // never rejects the lead, it just flags it unverified for review — so a
-    // false positive never loses a lead, and strict rejection can be turned on
-    // later if bot volume justifies it. Skipped entirely if no secret is set.
-    let unverified = false;
+    // Cloudflare Turnstile bot check. A failed check rejects the submission:
+    // flagging them for review instead let a spam run of 130+ fake leads
+    // through in a day, every one of which had failed the check. The real
+    // visitor this might catch sees an error with our email address rather
+    // than a false "we got it". Skipped entirely if no secret is set, and
+    // still let through if Cloudflare itself can't be reached (verifyTurnstile).
     if (env.TURNSTILE_SECRET) {
       const turnstileOk = await verifyTurnstile(
         env.TURNSTILE_SECRET,
         (form.get("cf-turnstile-response") || "").toString(),
         request.headers.get("CF-Connecting-IP")
       );
-      if (!turnstileOk) unverified = true;
+      if (!turnstileOk) {
+        console.log("quote rejected: failed Turnstile", source);
+        return json({ success: false, message: "We couldn't verify you're not a bot. Please refresh the page and try again." }, 403, origin);
+      }
     }
 
     // Optional file attachments (form field name "attachments", multiple).
@@ -431,17 +435,14 @@ export default {
               `send the details?</blockquote>`
             : `<p><strong>Phone-only lead — did NOT opt in to texts.</strong> Call them, or get verbal consent before texting. (No auto-reply was sent.)</p>`)
         : "";
-      const unverifiedNote = unverified
-        ? `<p style="background:#fde2e1;border:1px solid #f5b5b2;border-radius:8px;padding:10px 14px;color:#8a1c16;"><strong>&#9888; UNVERIFIED:</strong> This lead did not pass the Turnstile bot check, but was saved anyway. Treat it with extra caution.</p>`
-        : "";
       await sendEmail(env.RESEND_API_KEY, {
         from: env.MAIL_FROM,
         to: [env.LEAD_TO],
         ...(email ? { reply_to: email } : {}),
-        subject: (unverified ? "[UNVERIFIED] " : "") + (isQuick
+        subject: isQuick
           ? `New quick lead (${source}) — ${email || phone}`
-          : `New quote request (${source}) — ${name}`),
-        html: `<h2>New quote request from thedomebros.com</h2>${unverifiedNote}<p><strong>Source:</strong> ${source}</p>${leadHtml}${phoneOnlyNote}${fileNote}`,
+          : `New quote request (${source}) — ${name}`,
+        html: `<h2>New quote request from thedomebros.com</h2><p><strong>Source:</strong> ${source}</p>${leadHtml}${phoneOnlyNote}${fileNote}`,
         ...(attachments.length ? { attachments } : {}),
       });
 
@@ -498,7 +499,7 @@ export default {
       ctx.waitUntil(fetch(env.LEAD_LOG_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, address, message: unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : message, sms_consent: smsConsent ? "yes" : "no" }),
+        body: JSON.stringify({ source, name, email, phone, pool_size: poolSize, address, message, sms_consent: smsConsent ? "yes" : "no" }),
       }).catch(() => {}));
     }
 
@@ -512,7 +513,7 @@ export default {
       const qf = new FormData();
       qf.set("phone", phone || ""); qf.set("email", email || ""); qf.set("name", name || "");
       qf.set("source", source); qf.set("pool_size", poolSize || ""); qf.set("address", address || "");
-      qf.set("message", unverified ? (message ? message + " " : "") + "[UNVERIFIED]" : (message || ""));
+      qf.set("message", message || "");
       if (ref) qf.set("ref", ref);
       for (const file of files) qf.append("attachments", file, file.name || "photo");
       const ingestPayload = { phone, name, email, source, consent: smsConsent ? "opted_in" : "unknown", ...(ref ? { ref } : {}), ...(attribution ? { attribution } : {}) };
