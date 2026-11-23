@@ -110,7 +110,9 @@
     .steps{columns:2;column-gap:30px}
     .steps li{break-inside:avoid}
     h1{font-size:30px}
-    .hero img{max-height:460px;object-fit:cover}
+    /* contain, not cover: a portrait render (tall backyard photo) was losing
+       the dome's top and bottom to the crop. */
+    .hero img{max-height:560px;object-fit:contain}
     /* Room to show them all at once — no scrolling to discover the rest. */
     .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;overflow:visible}
     .gal figure{flex:none}
