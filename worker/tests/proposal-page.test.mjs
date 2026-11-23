@@ -91,6 +91,7 @@ ok('...in a new tab, so the proposal stays open', /href="\/gallery" target="_bla
 ok('no disclaimer on the photos', !/installs, not ours/.test(out));
 // The manufacturer is not named: a customer who goes looking can buy direct.
 ok('the manufacturer is not named', !/Ameri-Brand|Ameridome|Ameri Dome/i.test(out));
+ok('the self-draining heater mount is stated as what we do', /We mount yours tilted/.test(out));
 ok('...but the dome is still credited as US-made', /Made in the USA/.test(out));
 // The LLC is registered at a family home; that address stays off a page we send out.
 ok('the street address is not on the page', !out.includes('4558') && !out.includes('9820'));
@@ -108,6 +109,16 @@ ok('...and on the version sent before a quote', out.includes('id="shareBtn"'));
 out = show({ ...base, contract: undefined, price: 21000 });
 ok('...and on the quoted-but-unsigned version', out.includes('id="shareBtn"'));
 out = show({ ...base, sqft: 1008, pool_size: '20 x 40' });
+
+console.log('The manufacturer stays unnamed site-wide:');
+// A customer who learns the manufacturer's name can buy the dome direct, so the
+// name belongs in the repo and the contracts, never on a page we publish.
+for (const page of ['index.html', 'gallery.html', 'proposal.html', 'faq.html', 'about.html',
+                    'pricing.html', 'swim-year-round.html', 'selections.html', 'contact.html']) {
+  const src = readFileSync(join(SITE, page), 'utf8');
+  ok(`${page} does not name them`, !/ameri-?brand|ameri ?dome/i.test(src));
+}
+ok('the gallery still attributes the photos', /used with permission/i.test(readFileSync(join(SITE, 'gallery.html'), 'utf8')));
 
 console.log(`\nproposal-page.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;
