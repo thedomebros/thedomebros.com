@@ -118,7 +118,12 @@ for (const page of ['index.html', 'gallery.html', 'proposal.html', 'faq.html', '
   const src = readFileSync(join(SITE, page), 'utf8');
   ok(`${page} does not name them`, !/ameri-?brand|ameri ?dome/i.test(src));
 }
-ok('the gallery still attributes the photos', /used with permission/i.test(readFileSync(join(SITE, 'gallery.html'), 'utf8')));
+// Neither claim: the photos are not presented as our installs, and the pages
+// don't volunteer that they aren't ours either.
+for (const page of ['index.html', 'gallery.html', 'proposal.html']) {
+  const src = readFileSync(join(SITE, page), 'utf8');
+  ok(`${page} doesn't disclaim the photos`, !/not ours|used with permission|courtesy of/i.test(src));
+}
 
 console.log(`\nproposal-page.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;
