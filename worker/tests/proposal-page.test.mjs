@@ -85,6 +85,8 @@ ok('the license and insurance are shown', out.includes('14296899-5501') && out.i
 ok('walls are the real 5 ft 6 in, not "about 6 feet"', out.includes('5 ft 6 in') && !/Walls stand about 6 feet/.test(out));
 ok('deflation time is given by size, not one figure for everyone', /3 to 5 minutes/.test(out) && /15 to 20/.test(out));
 ok('the gallery still says whose installs these are', /manufacturer’s installs, not ours/.test(out));
+ok('...and links out to the full gallery', out.includes('href="/gallery"'));
+ok('...in a new tab, so the proposal stays open', /href="\/gallery" target="_blank"/.test(out));
 
 console.log(`\nproposal-page.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;
