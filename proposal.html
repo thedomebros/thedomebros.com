@@ -265,14 +265,14 @@ function render(d){
     +  '<li><span class="k">Cold weather</span><span class="v">Performs well to about −10°F</span></li>'
     +  '<li><span class="k">Lifespan</span><span class="v">9–12 years in a climate like ours</span></li>'
     +  '<li><span class="k">Warranty</span><span class="v">3 years — year one in full,<br />years two and three prorated</span></li>'
-    +  '<li><span class="k">Made by</span><span class="v">Ameri-Brand Products<br />Oroville, California, since 1998</span></li>'
+    +  '<li><span class="k">Built</span><span class="v">Made in the USA</span></li>'
     +  '</ul></div>';
 
   // Running costs, with the big one named rather than glossed. Quoting the
   // blower figure alone would read as the whole answer, and it isn't.
   h += '<div class="card"><h2>What it costs to run</h2><ul class="wins">'
     +  '<li><b>The blower: $28–35 a month</b><span>The manufacturer’s own figure. It doesn’t run constantly — a pressure switch kicks it on when the pressure drops and off again at full inflation.</span></li>'
-    +  '<li><b>Heating the pool: more than that, and it depends on you</b><span>This is the real running cost and we’re not going to pretend otherwise. It comes down to your pool, your gas rate and how warm you keep it. The dome traps heat and all but stops evaporation, so the heat you pay for goes much further than on an open pool — ask us and we’ll work out a number for your pool specifically.</span></li>'
+    +  '<li><b>Heating the pool: more than that, and it depends on you</b><span>This is the real running cost and we’re not going to pretend otherwise. It comes down to your pool, your gas rate and how warm you keep it. The dome traps heat and all but stops evaporation, so the heat you pay for goes a great deal further than it would on an open pool.</span></li>'
     +  '<li><b>Takedown, storage and reinstall: optional, priced separately</b><span>Not included in the price above. You can do it yourself — the manufacturer reckons about six hours with a couple of helpers — or we’ll handle it. Ask us what it runs for your dome.</span></li>'
     +  '<li><b>A zipper every 4 to 5 years</b><span>The replacement panel ships with your dome and lives in your garage, so you’re paying for the visit, not the part.</span></li>'
     +  '</ul></div>';
@@ -317,8 +317,7 @@ function render(d){
     +  shot("/Images/roof-blue-striped.webp", "Blue and white striped pool dome in a backyard in late fall")
     +  shot("/Images/roof-blue.webp", "Blue pool dome filling a suburban backyard")
     +  shot("/Images/roof-white.webp", "White pool dome on a landscaped property")
-    +  '</div><p class="pricenote" style="margin-top:12px">These are the manufacturer’s installs, not ours — we won’t pass off someone else’s backyard as our work.</p>'
-    +  '<p class="pricenote" style="margin-top:8px"><a href="/gallery" target="_blank" rel="noopener">More photos — interiors, roof colors, doors and blowers →</a></p></div>';
+    +  '</div><p class="pricenote" style="margin-top:12px"><a href="/gallery" target="_blank" rel="noopener">More photos — interiors, roof colors, doors and blowers →</a></p></div>';
 
   // FAQ — the questions that stall a decision.
   h += '<div class="card"><h2>Common questions</h2>'
@@ -353,7 +352,7 @@ function render(d){
   h += '<div class="card"><h2>Who you’re dealing with</h2>'
     +  '<p class="sub" style="margin-bottom:12px">We’re three brothers in Cedar Hills. One number, and one of us picks it up.</p>'
     +  '<ul class="spec">'
-    +  '<li><span class="k">TheDomeBros LLC</span><span class="v">4558 W 9820 N<br />Cedar Hills, Utah 84062</span></li>'
+    +  '<li><span class="k">Business</span><span class="v">TheDomeBros LLC<br />Cedar Hills, Utah</span></li>'
     +  '<li><span class="k">Utah contractor license</span><span class="v">DOPL 14296899-5501<br />Classification S330</span></li>'
     +  '<li><span class="k">Liability insurance</span><span class="v">$1M per occurrence<br />$2M aggregate — certificate on request</span></li>'
     +  '<li><span class="k">Phone</span><span class="v"><a href="tel:+13852044760">(385) 204-4760</a></span></li>'
@@ -365,18 +364,21 @@ function render(d){
       +  '<p class="sub" style="margin-bottom:14px">You can review and sign right here. Or don’t yet — ask us the awkward question first and sign when you’re actually sure. We’d rather have a happy customer than a fast one.</p>'
       +  '<a class="btn" href="'+esc(d.contract)+'">Review &amp; sign</a>'
       +  '<a class="btn ghost" href="sms:+13852044760">Text us a question</a>'
-      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p>'
+      +  '<button class="btn ghost" type="button" id="shareBtn">Share this page</button></div>';
   } else if (!quoted){
     h += '<div class="card noprint"><h2>Want to know what it’d cost on your pool?</h2>'
       +  '<p class="sub" style="margin-bottom:14px">Half an hour, no charge, and you get a picture of your own dome out of it. We don’t ask you to decide anything that day.</p>'
       +  '<a class="btn" href="sms:+13852044760">Book a free measurement</a>'
       +  '<a class="btn ghost" href="tel:+13852044760">Call us instead</a>'
-      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p>'
+      +  '<button class="btn ghost" type="button" id="shareBtn">Share this page</button></div>';
   } else {
     h += '<div class="card noprint"><h2>Questions?</h2>'
       +  '<p class="sub" style="margin-bottom:14px">We’d rather answer them than have you guess.</p>'
       +  '<a class="btn ghost" href="sms:+13852044760">Text us</a>'
-      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p>'
+      +  '<button class="btn ghost" type="button" id="shareBtn">Share this page</button></div>';
   }
 
   h += '</div>';   // /layout
@@ -400,6 +402,24 @@ function shot(src, alt){
   });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape") close(); });
 })();
+
+// Share: the native sheet on a phone (which is where a texted link gets
+// opened), a clipboard copy anywhere else. Delegated — the button is rendered
+// after this runs.
+document.addEventListener("click", function(e){
+  var b = e.target.closest && e.target.closest("#shareBtn");
+  if (!b) return;
+  var url = location.href, label = b.textContent;
+  var said = function(msg){ b.textContent = msg; setTimeout(function(){ b.textContent = label; }, 2500); };
+  if (navigator.share){
+    navigator.share({ title: document.title, url: url }).catch(function(){});
+  } else if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){ said("Link copied"); },
+                                           function(){ prompt("Copy this link:", url); });
+  } else {
+    prompt("Copy this link:", url);
+  }
+});
 
 // Our own browsers don't count as the customer reading their proposal. Open
 // this page once with ?team=1 on a phone or laptop and it stays marked (?team=0

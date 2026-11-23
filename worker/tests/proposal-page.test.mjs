@@ -84,9 +84,30 @@ ok('buying direct is answered rather than dodged', out.includes('Why not buy one
 ok('the license and insurance are shown', out.includes('14296899-5501') && out.includes('$1M per occurrence'));
 ok('walls are the real 5 ft 6 in, not "about 6 feet"', out.includes('5 ft 6 in') && !/Walls stand about 6 feet/.test(out));
 ok('deflation time is given by size, not one figure for everyone', /3 to 5 minutes/.test(out) && /15 to 20/.test(out));
-ok('the gallery still says whose installs these are', /manufacturer’s installs, not ours/.test(out));
-ok('...and links out to the full gallery', out.includes('href="/gallery"'));
+ok('the gallery links out to the full set', out.includes('href="/gallery"'));
 ok('...in a new tab, so the proposal stays open', /href="\/gallery" target="_blank"/.test(out));
+// The photos are used with the manufacturer's written permission, so the page
+// does not apologise for them.
+ok('no disclaimer on the photos', !/installs, not ours/.test(out));
+// The manufacturer is not named: a customer who goes looking can buy direct.
+ok('the manufacturer is not named', !/Ameri-Brand|Ameridome|Ameri Dome/i.test(out));
+ok('...but the dome is still credited as US-made', /Made in the USA/.test(out));
+// The LLC is registered at a family home; that address stays off a page we send out.
+ok('the street address is not on the page', !out.includes('4558') && !out.includes('9820'));
+ok('...just the city', /Cedar Hills, Utah/.test(out));
+// We do not actually compute a heating figure for people, so we do not offer to.
+ok('no offer to work out a heating number', !/work out a number/.test(out));
+ok('...but heating is still named as the bigger cost', /Heating the pool/.test(out));
+
+console.log('Sharing:');
+ok('a share button is offered on a full proposal', out.includes('id="shareBtn"'));
+ok('...and the handler is wired to the native share sheet', html.includes('navigator.share'));
+ok('...with a clipboard fallback', html.includes('navigator.clipboard'));
+out = show({ ok: true });
+ok('...and on the version sent before a quote', out.includes('id="shareBtn"'));
+out = show({ ...base, contract: undefined, price: 21000 });
+ok('...and on the quoted-but-unsigned version', out.includes('id="shareBtn"'));
+out = show({ ...base, sqft: 1008, pool_size: '20 x 40' });
 
 console.log(`\nproposal-page.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;
