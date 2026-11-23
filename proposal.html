@@ -27,14 +27,12 @@
   /* Hero: their dome on their own property. */
   .hero{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#eceadf;margin-bottom:14px}
   .hero img{display:block;width:100%;height:auto}
-  /* Summer: their yard with the dome down, next to one anchor up close. */
+  /* Summer: their yard with the dome down. */
   .summer .lead{font-size:14px;color:var(--mut);margin:0 0 14px}
   .pair{display:grid;grid-template-columns:1fr;gap:12px;margin:0}
   .pair figure{margin:0}
   .pair img{display:block;width:100%;height:auto;border-radius:14px}
   .pair figcaption{font-size:12.5px;color:var(--mut);margin-top:6px}
-  /* The close-up is a tall phone photo; on a phone keep it from taking a whole screen. */
-  .pair figure+figure img{width:auto;max-width:100%;max-height:340px}
   /* Spec rows */
   .spec{list-style:none;margin:0;padding:0}
   .spec li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
@@ -123,7 +121,7 @@
        the picture, centred. */
     .hero{width:fit-content;max-width:100%;margin:0 auto 14px}
     .hero img{width:auto;max-width:100%;max-height:620px}
-    /* Side by side at a shared height, centred, instead of one huge photo. */
+    /* Capped and centred, so a tall backyard photo doesn't fill the screen. */
     .pair{display:flex;justify-content:center;align-items:flex-start;gap:14px}
     .pair figure{flex:0 1 auto}
     .pair img{width:auto;max-width:100%;max-height:420px}
@@ -178,14 +176,12 @@ function render(d){
   }
 
   // The same yard with the dome down. "Will it wreck my deck?" is the question
-  // behind a lot of hesitation, so answer it with their own yard and one real
-  // anchor at finger scale.
+  // behind a lot of hesitation, so answer it with their own yard.
   if (d.render_summer){
     h += '<div class="card summer"><h2>And in summer</h2>'
       +  '<p class="lead">The dome comes down in the spring. All that stays is a row of small anchors set flush in your deck. This is your yard with it down.</p>'
       +  '<div class="pair">'
       +  '<figure><img src="'+esc(d.render_summer)+'" alt="Your yard in summer with the dome down" /><figcaption>Your yard with the dome down</figcaption></figure>'
-      +  '<figure><img src="/Images/anchor-closeup.webp" alt="One dome anchor in a pool deck, next to a finger for scale" loading="lazy" /><figcaption>One anchor up close, next to a finger for scale</figcaption></figure>'
       +  '</div></div>';
   }
 

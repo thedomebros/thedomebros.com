@@ -31,9 +31,9 @@ ok('the winter render still shows', out.includes('src="https://m.test/media/viz%
 out = show({ ...base, render_summer: 'https://m.test/media/viz%2Fs.jpg' });
 ok('with one, the summer section appears', /And in summer/.test(out));
 ok('...showing their own yard with the dome down', out.includes('src="https://m.test/media/viz%2Fs.jpg"'));
-ok('...beside the real anchor close-up', out.includes('src="/Images/anchor-closeup.webp"'));
+ok('the anchor close-up stays on the website, not the proposal', !out.includes('anchor-closeup'));
 ok('...right after the winter render, before the rest of the page', out.indexOf('class="hero"') < out.indexOf('And in summer') && out.indexOf('And in summer') < out.indexOf('What changes'));
-ok('the close-up file exists on the site', existsSync(join(SITE, 'Images', 'anchor-closeup.webp')));
+ok('the close-up file exists on the site for the FAQ', existsSync(join(SITE, 'Images', 'anchor-closeup.webp')));
 
 out = show({ ...base, render_summer: 'https://m.test/x.jpg" onerror="alert(1)' });
 ok('the summer URL is escaped', !out.includes('onerror="alert(1)"'));
