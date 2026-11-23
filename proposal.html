@@ -38,7 +38,7 @@
   .spec li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
   .spec li:last-child{border-bottom:0}
   .spec .k{color:var(--mut)}
-  .spec .v{font-weight:700;text-align:right}
+  .spec .v{font-weight:700;text-align:right;line-height:1.42}
   /* Price */
   .price{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:34px;color:var(--navy);margin:2px 0 2px}
   .pricenote{font-size:13px;color:var(--mut)}
@@ -165,12 +165,25 @@ var money = function(n){ return "$" + Math.round(n).toLocaleString("en-US"); };
 function render(d){
   var h = "";
 
-  h += '<div class="card intro"><span class="pill">Your proposal</span>'
-    +  '<h1>'+(d.name ? esc(String(d.name).split(" ")[0]) + "’s pool dome" : "Your pool dome")+'</h1>'
-    +  '<p class="sub">Everything in one place while you think it over. Nothing here expires — take your time.</p></div>';
+  // Sent to someone we haven’t quoted yet, this is the same page with a
+  // different front: it leads with what a measurement involves and asks for the
+  // appointment instead of a signature. The two conditions are separate — a
+  // render can exist before a price does, and when it does we still greet them
+  // by name rather than like a stranger.
+  var quoted = d.price != null;
+  var personal = !!(d.name || d.render);
 
-  // Their dome, on their property — the whole reason this page works. Sits under
-  // their name, so the page opens by saying who it's for and then showing them.
+  if (!personal){
+    h += '<div class="card intro"><span class="pill">Pool domes · Utah County</span>'
+      +  '<h1>Swim all winter, in the pool you already have</h1>'
+      +  '<p class="sub">Everything we’d tell you standing in your backyard — the specs, what it actually costs to run, and the parts we’d rather you heard from us. Nothing to fill in.</p></div>';
+  } else {
+    h += '<div class="card intro"><span class="pill">Your proposal</span>'
+      +  '<h1>'+(d.name ? esc(String(d.name).split(" ")[0]) + "’s pool dome" : "Your pool dome")+'</h1>'
+      +  '<p class="sub">Everything in one place while you think it over.</p></div>';
+  }
+
+  // Their dome, on their property — the whole reason this page works.
   if (d.render){
     h += '<div class="hero"><img src="'+esc(d.render)+'" alt="Your pool dome, shown on your property" /></div>';
   }
@@ -187,72 +200,116 @@ function render(d){
 
   h += '<div class="layout">';
 
+  // Price and configuration, up top. Someone reading their own proposal has
+  // already been measured and already wants it — lead with the decision, not
+  // the pitch.
+  var rows = [];
+  if (d.sqft) rows.push(["Dome footprint", Number(d.sqft).toLocaleString("en-US") + " sq ft"]);
+  if (d.pool_size) rows.push(["Your pool", d.pool_size]);
+  if (d.options){
+    if (d.options.color) rows.push(["Roof color", d.options.color]);
+    if (d.options.door) rows.push(["Entry", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
+    if (d.options.heater) rows.push(["Heater", d.options.heater]);
+  }
+
+  h += '<aside class="side">';
+  // A quote can be a range until the options are locked. Showing the low end as
+  // a firm price is how the contract ends up contradicting the proposal.
+  if (quoted){
+    var ranged = d.price_max != null && d.price_max > d.price;
+    var halfLo = money(d.price / 2), halfHi = ranged ? money(d.price_max / 2) : null;
+    h += '<div class="card"><h2>Your price</h2>'
+      +  '<div class="price">'+(ranged ? money(d.price) + "–" + money(d.price_max) : money(d.price))+'</div>'
+      +  '<div class="pricenote">Includes the dome, delivery, and professional installation. Utah sales tax included.</div>'
+      +  '<div class="split"><div><div class="l">To get started</div><div class="n">'+(ranged ? halfLo + "–" + halfHi : halfLo)+'</div></div>'
+      +  '<div><div class="l">On completion</div><div class="n">'+(ranged ? halfLo + "–" + halfHi : halfLo)+'</div></div></div>'
+      +  (ranged ? '<div class="pricenote" style="margin-top:11px">A range until the last measurements and options are settled. Your contract shows one number, and it won’t be higher than the top of this range.</div>' : '')
+      +  '</div>';
+  }
+  if (rows.length){
+    h += '<div class="card"><h2>'+(quoted ? "Your dome" : "Your pool")+'</h2><ul class="spec">'
+      + rows.map(function(r){ return '<li><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></li>'; }).join("")
+      + '</ul></div>';
+  }
+  h += '</aside>';
+
+  // No quote yet: the next step is the measurement, so say exactly what one is.
+  if (!quoted){
+    h += '<div class="card"><h2>What a measurement costs you: nothing, and about half an hour</h2><ul class="wins">'
+      +  '<li><b>Free, 30 to 60 minutes</b><span>Depending on your setup and how many questions you have.</span></li>'
+      +  '<li><b>We check there’s room</b><span>We measure the pool and the deck to confirm the dome fits — the footprint plus the clearance it needs around the edge.</span></li>'
+      +  '<li><b>We check how it anchors</b><span>Most decks take standard anchors set flush into the concrete. Some setups need water-based anchors instead, and that’s much better to know now than on install day.</span></li>'
+      +  '<li><b>We look at your power</b><span>The blower needs a circuit near the pool. We’d rather find that out with you standing there.</span></li>'
+      +  '<li><b>You get a picture of your own dome</b><span>One photo from your deck, and we send back a to-scale render of the dome on your pool.</span></li>'
+      +  '<li><b>You get a real price, not a range</b><span>No obligation, and we don’t ask you to decide anything that day.</span></li>'
+      +  '</ul></div>';
+  }
+
   // What actually changes for them. Concrete scenes, not adjectives.
   h += '<div class="card"><h2>What changes</h2><ul class="wins">'
     +  '<li><b>You swim in January</b><span>Same water, same yard. It just stops sitting unused the moment the weather turns.</span></li>'
-    +  '<li><b>The kids actually use it</b><span>Swim practice, birthdays, a Tuesday after school \u2014 in the middle of winter.</span></li>'
-    +  '<li><b>Warm the moment you step out</b><span>It stays warm and bright inside, so getting out of the water doesn\u2019t mean getting cold.</span></li>'
-    +  '<li><b>Summer is still summer</b><span>It comes down in the spring. You get an open-air pool and a warm one \u2014 not a choice between them.</span></li>'
-    +  '<li><b>Your pool stays clean</b><span>Leaves, dust and storm debris stay outside. Less skimming, fewer chemicals.</span></li>'
-    +  '<li><b>You\u2019re not the one looking after it</b><span>We put it up, take it down, store it, and fix what wears out.</span></li>'
+    +  '<li><b>The kids actually use it</b><span>Swim practice, birthdays, a Tuesday after school — in the middle of winter.</span></li>'
+    +  '<li><b>Summer is still summer</b><span>It comes down in the spring. You get an open-air pool and a warm one — not a choice between them.</span></li>'
     +  '</ul></div>';
 
-  // Configuration
-  var rows = [];
-  if (d.options){
-    if (d.options.color) rows.push(["Roof color", d.options.color]);
-    if (d.options.door) rows.push(["Door", d.options.door + (d.options.doorCount > 1 ? " × " + d.options.doorCount : "")]);
-    if (d.options.heater) rows.push(["Heater", d.options.heater]);
-  }
-  h += '<aside class="side">';
-  if (rows.length){
+  // The actual product. Published manufacturer figures, not adjectives — a
+  // buyer at this price checks, and these hold up when they do.
+  h += '<div class="card"><h2>The dome itself</h2><ul class="spec">'
+    +  '<li><span class="k">Material</span><span class="v">20 mil PVC, UV-stabilized<br />100% virgin vinyl, made in USA</span></li>'
+    +  '<li><span class="k">Wall height</span><span class="v">5 ft 6 in</span></li>'
+    +  '<li><span class="k">Center height</span><span class="v">12–14 ft typical<br />(about 11 ft 9 in on a 1,250 sq ft dome)</span></li>'
+    +  '<li><span class="k">Anchor cable</span><span class="v">3/16 in vinyl-coated, 3,000 lb rated<br />sealed into an 18 oz reinforced hem</span></li>'
+    +  '<li><span class="k">Anchors</span><span class="v">Flush 1/2 in sleeves every 3 ft<br />removable eyebolts, stainless plugs</span></li>'
+    +  '<li><span class="k">Blower</span><span class="v">1/3–1/2 HP, 2,500–3,000 CFM<br />115V, pressure switch, 2 thermal cutoffs</span></li>'
+    +  '<li><span class="k">Heater</span><span class="v">Water-fed off your pool heater’s return<br />needs no electricity of its own</span></li>'
+    +  '<li><span class="k">Cold weather</span><span class="v">Performs well to about −10°F</span></li>'
+    +  '<li><span class="k">Lifespan</span><span class="v">9–12 years in a climate like ours</span></li>'
+    +  '<li><span class="k">Warranty</span><span class="v">3 years — year one in full,<br />years two and three prorated</span></li>'
+    +  '<li><span class="k">Made by</span><span class="v">Ameri-Brand Products<br />Oroville, California, since 1998</span></li>'
+    +  '</ul></div>';
 
-    h += '<div class="card"><h2>What you picked</h2><ul class="spec">'
-      + rows.map(function(r){ return '<li><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></li>'; }).join("")
-      + '</ul>'
-      + '</div>';
-  }
-
-  // Price — the exact quote, matching the contract.
-  if (d.price != null){
-    var half = d.price / 2;
-    h += '<div class="card"><h2>Your price</h2>'
-      +  '<div class="price">'+money(d.price)+'</div>'
-      +  '<div class="pricenote">Includes the dome, delivery, and professional installation. Utah sales tax included.</div>'
-      +  '<div class="split"><div><div class="l">To get started</div><div class="n">'+money(half)+'</div></div>'
-      +  '<div><div class="l">On completion</div><div class="n">'+money(half)+'</div></div></div></div>';
-  }
-
-  h += '</aside>';
+  // Running costs, with the big one named rather than glossed. Quoting the
+  // blower figure alone would read as the whole answer, and it isn't.
+  h += '<div class="card"><h2>What it costs to run</h2><ul class="wins">'
+    +  '<li><b>The blower: $28–35 a month</b><span>The manufacturer’s own figure. It doesn’t run constantly — a pressure switch kicks it on when the pressure drops and off again at full inflation.</span></li>'
+    +  '<li><b>Heating the pool: more than that, and it depends on you</b><span>This is the real running cost and we’re not going to pretend otherwise. It comes down to your pool, your gas rate and how warm you keep it. The dome traps heat and all but stops evaporation, so the heat you pay for goes much further than on an open pool — ask us and we’ll work out a number for your pool specifically.</span></li>'
+    +  '<li><b>Takedown, storage and reinstall: optional, priced separately</b><span>Not included in the price above. You can do it yourself — the manufacturer reckons about six hours with a couple of helpers — or we’ll handle it. Ask us what it runs for your dome.</span></li>'
+    +  '<li><b>A zipper every 4 to 5 years</b><span>The replacement panel ships with your dome and lives in your garage, so you’re paying for the visit, not the part.</span></li>'
+    +  '</ul></div>';
 
   // The trade-offs. Every one of these comes up eventually — better it comes
-  // from us now than from a neighbor after they've signed.
+  // from us now than from a neighbor after they’ve signed.
   h += '<div class="card real"><h2>Straight talk</h2>'
     +  '<p class="lead">Things we’d rather you hear from us than find out in January.</p><dl>'
     +  '<dt>It’s big, and your neighbors will notice</dt>'
     +  '<dd>It covers your pool and stands well above it. If you’re in an HOA, check the rules before you sign — we’d rather lose the sale than have you fight that fight afterwards.</dd>'
+    +  '<dt>We drill into your deck</dt>'
+    +  '<dd>Anchor sleeves go into the concrete every three feet, and they stay there for good. In the summer the eyebolts come out and stainless plugs sit flush, so the deck is flat and clear — but the holes are permanent.</dd>'
+    +  '<dt>A second entry has to be decided now</dt>'
+    +  '<dd>One zippered entry is standard. If you want a second one, or an L-entry for getting furniture in and out, it has to be ordered with the dome. Adding one later means the dome goes back to the factory, and it’s expensive.</dd>'
+    +  '<dt>Seasonal service isn’t included</dt>'
+    +  '<dd>The price above covers the dome, delivery and installation. Taking it down each spring, storing it and putting it back up is a separate service you can buy from us or do yourself.</dd>'
     +  '<dt>Your pool equipment stays outside</dt>'
     +  '<dd>The pump and plumbing can’t go under the dome — too noisy — so they stay out in the cold. Things can break down out there over a hard winter. If that happens, we can take care of it.</dd>'
     +  '<dt>Zippers are a wear item</dt>'
-    +  '<dd>The zipper is deliberately the weakest part of the dome — if something has to give, better it’s that than the vinyl. It wears with use and gets replaced eventually; we handle the swap.</dd>'
+    +  '<dd>The zipper is deliberately the weakest part of the dome — if something has to give, better it’s that than the vinyl. Expect to replace it every four to five years, and it’s the one part the manufacturer’s warranty doesn’t cover. The spare panel comes with your dome.</dd>'
+    +  '<dt>The heater has to be drained in a hard freeze</dt>'
+    +  '<dd>If the power goes out at 25°F or colder, water sitting in the heater can freeze and split the coil, and the coil maker won’t warrant that. There’s a straightforward way to mount it so it drains itself if the power drops — ask us about it when you’re deciding on the heater.</dd>'
     +  '</dl></div>';
 
-  // What happens next
+  // What happens next, with the lead time stated. The production queue is the
+  // real constraint, and a date we confirm beats a date we imply.
   h += '<div class="card"><h2>What happens next</h2><ol class="steps">'
-    +  '<li><b>You sign</b><span>Review the agreement and sign online — no pressure, and you have three days to change your mind.</span></li>'
+    +  '<li><b>You sign</b><span>Review the agreement and sign online. You have three business days to change your mind.</span></li>'
     +  '<li><b>50% deposit</b><span>This reserves your dome and locks your price.</span></li>'
-    +  '<li><b>We schedule your install</b><span>We’ll pick a date that works and confirm it with you.</span></li>'
-    +  '<li><b>Install day</b><span>Our crew handles the whole thing — most installs are done in a day. You don’t need to do anything but let us in.</span></li>'
+    +  '<li><b>It gets built</b><span>Every dome is cut to your pool’s measurements, so nothing ships off a shelf. Figure one to four months depending on how loaded the factory is when you order — their first and fourth quarters are the busiest. We confirm your date in writing rather than guess at it.</span></li>'
+    +  '<li><b>Install day</b><span>Our crew handles the whole thing — most installs are done in a day. You don’t need to do anything but clear the pool deck and let us in.</span></li>'
     +  '<li><b>You swim</b><span>Remaining balance is due once it’s up and you’re happy.</span></li>'
     +  '</ol></div>';
 
-  // Real installs
-  // The first two are the same backyard in summer and in deep snow — that pair
-  // makes the case better than any sentence does.
   // Winter only — a summer photo of a pool sells nothing, everyone has already
-  // pictured that. And not "domes we've installed": we haven't yet, and this
-  // page is written material we have to stand behind. The last four are real
-  // installs, one per roof color.
+  // pictured that. And not “domes we’ve installed”: these are the
+  // manufacturer’s, and this page is written material we have to stand behind.
   h += '<div class="card"><h2>Picture your winter</h2><div class="gal">'
     +  shot("/Images/pool-dome-winter.webp", "Pool dome lit from inside, backyard under snow")
     +  shot("/Images/inside-dome-winter.webp", "Steam rising off a heated pool inside the dome, snow outside")
@@ -260,47 +317,68 @@ function render(d){
     +  shot("/Images/roof-blue-striped.webp", "Blue and white striped pool dome in a backyard in late fall")
     +  shot("/Images/roof-blue.webp", "Blue pool dome filling a suburban backyard")
     +  shot("/Images/roof-white.webp", "White pool dome on a landscaped property")
-    +  '</div></div>';
+    +  '</div><p class="pricenote" style="margin-top:12px">These are the manufacturer’s installs, not ours — we won’t pass off someone else’s backyard as our work.</p></div>';
 
   // FAQ — the questions that stall a decision.
   h += '<div class="card"><h2>Common questions</h2>'
     +  faq("What's it like inside?",
-          "Roomier than it looks. Walls stand about 6 feet and the middle comes up to 12\u201314 feet on a typical dome, so you're walking around under it rather than stooping. A clear window band runs the whole way around, so it reads more like a sunroom than a tent.")
+          "Roomier than it looks. The walls stand 5 ft 6 in and the middle comes up to 12–14 feet on a typical dome, so you're walking around under it rather than stooping. A clear window band runs the whole way around, so it reads more like a sunroom than a tent.")
+    +  faq("Why not buy one direct from the manufacturer?",
+          "You can — they'll sell you one. What you'd be taking on is the install: drilling and setting anchors every three feet in your deck, a six-hour build with helpers you have to find, and a warranty that doesn't even start until the factory receives and acknowledges your install photos. We do that part, we submit the warranty paperwork, we're twenty minutes away when something tears in February, and we can take the dome down and store it for you. If none of that is worth anything to you, buying direct is the cheaper road and we'd rather say so.")
     +  faq("Do we have to leave it up all winter?",
-          "No \u2014 you don't have to leave it inflated at all. Plenty of owners switch the blower on about thirty minutes before they swim, and off again afterwards. Either way the pool never gets winterized and buried for six months.")
+          "No — you don't have to leave it inflated at all. Plenty of owners switch the blower on about thirty minutes before they swim, and off again afterwards. Either way the pool never gets winterized and buried for six months.")
     +  faq("What if the power goes out while we're in there?",
-          "It comes down gradually, never suddenly. A typical residential dome takes 15\u201320 minutes to settle far enough that you'd want to step out \u2014 there's plenty of time to walk out, and it re-inflates in about half an hour once the power is back.")
+          "It comes down gradually, never suddenly, and how fast depends on size — a small dome settles in 3 to 5 minutes, a 1,500 sq ft one takes 15 to 20. Either way there's time to walk out, and it re-inflates in about half an hour once the power is back. We'll tell you the number for your dome at the walkthrough.")
     +  faq("Won't it blow away?",
-          "It's designed to handle a typical windstorm, and owners regularly report riding out 60 mph gusts. In a severe storm the right move is to switch the blower off \u2014 the dome settles onto the water and rides it out like a pool cover. The zipper is deliberately the weakest point, so an extreme gust costs you a zipper rather than the whole dome.")
+          "It's designed to handle a typical windstorm, and owners regularly report riding out 60 mph gusts — though the manufacturer's own advice is not to push that. In a severe storm the right move is to switch the blower off: the dome settles onto the water and rides it out like a pool cover. The zipper is deliberately the weakest point, so an extreme gust costs you a zipper rather than the whole dome.")
     +  faq("What about heavy snow?",
-          "Light and medium snow melts off on its own from the warmth coming off the pool. In a real storm you can switch the blower off and let it settle onto the water. If you're away, the snow slowly presses it down to the surface, melts against the warm water, and it re-inflates on its own because the blower is still running. It works down to about \u221210\u00b0F.")
-    +  faq("What does it cost to run?",
-          "The blower isn't running constantly \u2014 a pressure switch kicks it on only when the pressure drops, so it uses less than people assume. And the dome traps heat and cuts evaporation, so the heating you do pay for goes a lot further than it would on an open pool.")
+          "Light and medium snow melts off on its own from the warmth coming off the pool. In a real storm you can switch the blower off and let it settle onto the water. If you're away, the snow slowly presses it down to the surface, melts against the warm water, and it re-inflates on its own because the blower is still running. It works down to about −10°F. One thing to be straight about: watching the weather is on you, not on us — that's in the agreement, and we'd rather point at it now than after a storm.")
     +  faq("How long will it last?",
-          "9\u201312 years in a cold climate like ours. Heat is what wears vinyl out, not cold \u2014 a dome here will outlive the same one in a desert state.")
+          "9–12 years in a cold climate like ours. Heat is what wears vinyl out, not cold — a dome here will outlive the same one in a desert state.")
     +  faq("What's the warranty?",
-          "Three years \u2014 the first year in full, the following two prorated. We submit the install photos and handle activating it with the manufacturer for you.")
+          "Three years — the first year in full, the following two prorated against current retail. It covers defects, materials and weld separation, and it doesn't cover zippers, tears or punctures. It only starts once the factory has your install photos and acknowledges them, which is paperwork we handle for you.")
     +  faq("Is it safe with kids around?",
-          "The entry zips shut and takes a padlock, so the water isn't open to curious kids or pets when you're not out there. It's a real physical barrier, though not a code-rated safety cover.")
+          "The entry zips shut and takes a padlock, so the water isn't open to curious kids or pets when you're not out there. It's a real physical barrier, though not a code-rated safety cover, and it doesn't replace whatever pool fencing your city requires.")
     +  faq("What happens in the summer?",
-          "It comes down and goes into storage. The anchor sleeves stay in the deck with stainless plugs sitting flush, so your deck is flat and clear all summer \u2014 nothing to trip over.")
+          "It comes down and goes into storage. The anchor sleeves stay in the deck with stainless plugs sitting flush, so your deck is flat and clear all summer — nothing to trip over.")
+    +  faq("What if we move?",
+          "It comes with you — it's equipment, not a structure, and the anchors are the only thing that stays behind. If you'd rather not take it, tell us and we'll help you sell it on.")
     +  faq("What if I change my mind?",
           "You have three business days after signing to cancel, in writing, for a full refund of anything paid.")
     +  '</div>';
 
-  h += '</div>';   // /layout
+  // Who they'd be handing a deposit to. New company, big number — this is the
+  // cheapest credibility we have and it was sitting in the contract unused.
+  h += '<div class="card"><h2>Who you’re dealing with</h2>'
+    +  '<p class="sub" style="margin-bottom:12px">We’re three brothers in Cedar Hills. You’ll have our cell numbers — not a call center.</p>'
+    +  '<ul class="spec">'
+    +  '<li><span class="k">TheDomeBros LLC</span><span class="v">4558 W 9820 N<br />Cedar Hills, Utah 84062</span></li>'
+    +  '<li><span class="k">Utah contractor license</span><span class="v">DOPL 14296899-5501<br />Classification S330</span></li>'
+    +  '<li><span class="k">Liability insurance</span><span class="v">$1M per occurrence<br />$2M aggregate — certificate on request</span></li>'
+    +  '<li><span class="k">Phone</span><span class="v"><a href="tel:+13852044760">(385) 204-4760</a></span></li>'
+    +  '</ul></div>';
 
   // CTA
   if (d.contract){
     h += '<div class="card noprint"><h2>Ready when you are</h2>'
-      +  '<p class="sub" style="margin-bottom:14px">You can review and sign right here. Or don’t yet — read the straight talk above again, ask us the awkward question, and sign when you’re actually sure. We’d rather have a happy customer than a fast one.</p>'
+      +  '<p class="sub" style="margin-bottom:14px">You can review and sign right here. Or don’t yet — ask us the awkward question first and sign when you’re actually sure. We’d rather have a happy customer than a fast one.</p>'
       +  '<a class="btn" href="'+esc(d.contract)+'">Review &amp; sign</a>'
-      +  '<a class="btn ghost" href="sms:+13852044760">Text us a question</a></div>';
+      +  '<a class="btn ghost" href="sms:+13852044760">Text us a question</a>'
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
+  } else if (!quoted){
+    h += '<div class="card noprint"><h2>Want to know what it’d cost on your pool?</h2>'
+      +  '<p class="sub" style="margin-bottom:14px">Half an hour, no charge, and you get a picture of your own dome out of it. We don’t ask you to decide anything that day.</p>'
+      +  '<a class="btn" href="sms:+13852044760">Book a free measurement</a>'
+      +  '<a class="btn ghost" href="tel:+13852044760">Call us instead</a>'
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
   } else {
     h += '<div class="card noprint"><h2>Questions?</h2>'
       +  '<p class="sub" style="margin-bottom:14px">We’d rather answer them than have you guess.</p>'
-      +  '<a class="btn ghost" href="sms:+13852044760">Text us</a></div>';
+      +  '<a class="btn ghost" href="sms:+13852044760">Text us</a>'
+      +  '<p class="foot" style="padding-top:14px">Deciding this with someone else? Send them this page — the link works for them too.</p></div>';
   }
+
+  h += '</div>';   // /layout
 
   document.getElementById("root").innerHTML = h;
 }

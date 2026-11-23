@@ -43,5 +43,48 @@ const faq = readFileSync(join(SITE, 'faq.html'), 'utf8');
 const ans = (faq.match(/What does my backyard look like when the dome is down\?<\/summary>([\s\S]*?)<\/details>/) || [])[1] || '';
 ok('the dome-down answer shows the real anchor', ans.includes('src="/Images/anchor-closeup.webp"'));
 
+console.log('Before we have quoted them:');
+// The same link gets sent to brand-new contacts who just want information, so
+// the page has to work with no price, no render and no name.
+out = show({ ok: true });
+ok('leads with the pitch, not "Your proposal"', out.includes('Swim all winter') && !out.includes('Your proposal'));
+ok('explains what a measurement involves', out.includes('What a measurement costs you'));
+ok('asks for the appointment, not a signature', out.includes('Book a free measurement') && !out.includes('Review &amp; sign'));
+ok('no empty price card', !out.includes('Your price'));
+
+// A render can exist before a price does — greet them by name anyway.
+out = show({ ...base, price: undefined, contract: undefined });
+ok('a render with no price still greets them by name', out.includes('Dan’s pool dome') && !out.includes('Swim all winter'));
+ok('...and still asks for the measurement', out.includes('Book a free measurement'));
+
+console.log('Price:');
+out = show({ ...base, price: 20100, price_max: null });
+ok('a single price renders once', out.includes('$20,100') && out.includes('$10,050'));
+out = show({ ...base, price: 19000, price_max: 24000 });
+ok('a ranged quote shows the range, not the low end alone', out.includes('$19,000–$24,000'));
+ok('...and splits both ends of the deposit', out.includes('$9,500–$12,000'));
+ok('...and says the contract will not exceed it', out.includes('higher than the top of this range'));
+out = show({ ...base, price: 19000, price_max: 19000 });
+ok('a max equal to the min is not a range', !out.includes('$19,000–$19,000'));
+
+console.log('What the customer is told:');
+out = show({ ...base, sqft: 1008, pool_size: '20 x 40' });
+ok('their own dome footprint appears', out.includes('1,008 sq ft'));
+ok('their pool as they described it appears', out.includes('20 x 40'));
+ok('the published vinyl spec appears', out.includes('20 mil PVC'));
+ok('the blower running cost is given as a number', out.includes('$28–35 a month'));
+ok('...and pool heating is named as the bigger, separate cost', /Heating the pool/.test(out));
+ok('seasonal service is not implied to be included', /optional, priced separately/.test(out));
+ok('the old "not the one looking after it" claim is gone', !out.includes('We put it up, take it down, store it'));
+ok('the lead time is stated', out.includes('one to four months'));
+ok('drilling the deck is disclosed', /drill into your deck/i.test(out));
+ok('the second-entry deadline is disclosed', /second entry has to be decided now/i.test(out));
+ok('the heater freeze risk is disclosed', /drained in a hard freeze/i.test(out));
+ok('buying direct is answered rather than dodged', out.includes('Why not buy one direct'));
+ok('the license and insurance are shown', out.includes('14296899-5501') && out.includes('$1M per occurrence'));
+ok('walls are the real 5 ft 6 in, not "about 6 feet"', out.includes('5 ft 6 in') && !/Walls stand about 6 feet/.test(out));
+ok('deflation time is given by size, not one figure for everyone', /3 to 5 minutes/.test(out) && /15 to 20/.test(out));
+ok('the gallery still says whose installs these are', /manufacturer’s installs, not ours/.test(out));
+
 console.log(`\nproposal-page.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;
