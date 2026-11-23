@@ -110,9 +110,11 @@
     .steps{columns:2;column-gap:30px}
     .steps li{break-inside:avoid}
     h1{font-size:30px}
-    /* contain, not cover: a portrait render (tall backyard photo) was losing
-       the dome's top and bottom to the crop. */
-    .hero img{max-height:560px;object-fit:contain}
+    /* Never crop the render (a tall backyard photo lost the dome to it) and
+       never pad it with empty bars: cap the height and let the frame shrink to
+       the picture, centred. */
+    .hero{width:fit-content;max-width:100%;margin:0 auto 14px}
+    .hero img{width:auto;max-width:100%;max-height:620px}
     /* Room to show them all at once — no scrolling to discover the rest. */
     .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;overflow:visible}
     .gal figure{flex:none}
